@@ -17,5 +17,8 @@ let package = Package(
     targets: [
         .target(
             name: "DeepList"),
+        .testTarget(
+            name: "DeepListTests",
+            dependencies: ["DeepList"]),
     ]
 )

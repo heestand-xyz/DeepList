@@ -11,10 +11,22 @@ extension DeepItem: Identifiable {
 
     public var id: UUID {
         switch self {
-        case .group(let id, _, _, _):
-            return id
-        case .element(let id):
-            return id
+        case .group(let id, _, _, _), .element(let id):
+            id
+        }
+    }
+}
+
+// MARK: - Items
+
+extension DeepItem {
+
+    public var items: [DeepItem]? {
+        switch self {
+        case .group(_, _, let items, _):
+            items
+        case .element:
+            nil
         }
     }
 }
@@ -75,20 +87,38 @@ extension DeepItem {
 extension DeepItem {
     
     public func isNew(place: DeepPlace, in items: [DeepItem]) -> Bool? {
-        guard id != place.itemID
-        else { return false }
-        if case .bottom = place {
-            return true
+        
+        if id == place.itemID {
+            return false
         }
+        
+        if case .bottom = place {
+            return items.last != self
+        }
+        
+        if case .above(let itemID) = place {
+            if case .group = self,
+               let index = items.firstIndex(of: self),
+               index < items.count - 1 {
+                let nextItem: DeepItem = items[index + 1]
+                if nextItem.id == itemID {
+                    return false
+                }
+            }
+        }
+        
         guard let placeItemID = place.itemID,
               let placeItem = items.firstDeep(id: placeItemID)
         else { return nil }
+        
         guard let depth: Int = items.depth(for: self),
               var placeDepth: Int = items.depth(for: placeItem)
-        else { return false }
+        else { return nil }
+        
         if case .below = place, case .group(_, _, _, let isExpanded) = placeItem, isExpanded {
             placeDepth += 1
         }
+        
         if depth == placeDepth {
             let index: Int = index(from: items)
             let placeIndex: Int = placeItem.index(from: items)
@@ -98,6 +128,7 @@ extension DeepItem {
                 return false
             }
         }
+        
         return true
     }
     
