@@ -17,13 +17,13 @@ public struct DeepItemView<T: DeepItemProtocol, Content: View>: View {
             
             Group {
                 switch item.representation {
-                case .group(_, _, let items, let isExpanded):
+                case .group(_, let items):
                     
                     VStack(alignment: .leading, spacing: 0.0) {
                     
                         content(item)
                         
-                        if isExpanded {
+                        if item.isExpanded {
                             
                             DeepListView(items: items, content: content)
                         }

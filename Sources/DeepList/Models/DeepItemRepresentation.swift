@@ -1,6 +1,6 @@
 import Foundation
 
 public indirect enum DeepItemRepresentation<T: DeepItemProtocol> {
-    case group(id: UUID, name: String, items: [T], isExpanded: Bool)
+    case group(id: UUID, items: [T])
     case element(id: UUID)
 }

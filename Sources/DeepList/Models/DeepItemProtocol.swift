@@ -1,10 +1,13 @@
 import Foundation
 
 public protocol DeepItemProtocol: Codable, Equatable, Identifiable {
+    
     var id: UUID { get }
     var representation: DeepItemRepresentation<Self> { get }
-    static func group(id: UUID, name: String, items: [Self], isExpanded: Bool) -> Self
-    static func element(id: UUID) -> Self
+    
+    var isExpanded: Bool { get }
+    
+    mutating func update(items: [Self])
 }
 
 // MARK: - Is
@@ -30,63 +33,12 @@ extension DeepItemProtocol {
 
 extension DeepItemProtocol {
 
-    public var items: [Self]? {
+    public var items: [Self] {
         switch representation {
-        case .group(_, _, let items, _):
+        case .group(_, let items):
             items
         case .element:
-            nil
-        }
-    }
-}
-
-// MARK: - Name
-
-extension DeepItemProtocol {
-
-    public var name: String? {
-        switch representation {
-        case .group(_, let name, _, _):
-            return name
-        case .element:
-            return nil
-        }
-    }
-    
-    public mutating func update(name: String) {
-        switch representation {
-        case .group(let id, _, let items, let isExpanded):
-            self = .group(id: id, name: name, items: items, isExpanded: isExpanded)
-        case .element:
-            break
-        }
-    }
-}
-
-// MARK: - Update Is Expanded
-
-extension DeepItemProtocol {
-    
-    public mutating func update(isExpanded: Bool) {
-        switch representation {
-        case .group(let id, let name, let items, _):
-            self = .group(id: id, name: name, items: items, isExpanded: isExpanded)
-        case .element:
-            break
-        }
-    }
-}
-
-// MARK: - Update Items
-
-extension DeepItemProtocol {
-    
-    public mutating func update(items: [Self]) {
-        switch representation {
-        case .group(let id, let name, _, let isExpanded):
-            self = .group(id: id, name: name, items: items, isExpanded: isExpanded)
-        case .element:
-            break
+            []
         }
     }
 }
@@ -117,15 +69,16 @@ extension DeepItemProtocol {
         }
         
         guard let placeItemID: UUID = place.itemID,
-              let placeItem: Self = items.firstDeep(id: placeItemID)
-        else { return nil }
+              let placeItem: Self = items.firstDeep(id: placeItemID) else {
+            return nil
+        }
         
         guard let depth: Int = items.depth(for: self),
-              var placeDepth: Int = items.depth(for: placeItem)
-        else { return nil }
+              var placeDepth: Int = items.depth(for: placeItem) else {
+            return nil
+        }
         
-        if case .below = place, case .group(_, _, _, let isExpanded) = placeItem.representation,
-           isExpanded {
+        if case .below = place,  placeItem.isGroup, placeItem.isExpanded {
             placeDepth += 1
         }
         
@@ -143,9 +96,7 @@ extension DeepItemProtocol {
     }
     
     public func isRecursive(place: DeepPlace) -> Bool {
-        guard let placeItemID = place.itemID,
-              case .group(_, _, let items, _) = representation
-        else { return false }
+        guard let placeItemID = place.itemID, isGroup else { return false }
         if case .below = place, placeItemID == id {
             return true
         }
@@ -154,8 +105,8 @@ extension DeepItemProtocol {
                 if item.id == placeItemID {
                     return true
                 }
-                if case .group(_, _, let items, _) = item.representation {
-                    if check(items: items) {
+                if item.isGroup {
+                    if check(items: item.items) {
                         return true
                     }
                 }
@@ -171,17 +122,13 @@ extension DeepItemProtocol {
 extension Array where Element: DeepItemProtocol {
     
     public mutating func move(item: Element, to place: DeepPlace) {
-        guard item.isNew(place: place, in: self) == true
-        else { return }
-        guard item.isRecursive(place: place) == false
-        else { return }
-        guard remove(id: item.id)
-        else {
+        guard item.isNew(place: place, in: self) == true else { return }
+        guard item.isRecursive(place: place) == false else { return }
+        guard remove(id: item.id) else {
             assertionFailure()
             return
         }
-        guard insert(item: item, at: place)
-        else {
+        guard insert(item: item, at: place) else {
             assertionFailure()
             return
         }
@@ -199,31 +146,26 @@ extension Array where Element: DeepItemProtocol {
             return true
         }
         for (index, siblingItem) in self.enumerated() {
-            guard siblingItem.id != item.id
-            else { continue }
+            guard siblingItem.id != item.id else { continue }
             if siblingItem.id == place.itemID {
                 var isBelow: Bool = false
                 if case .below = place {
                     isBelow = true
                 }
-                if isBelow,
-                   case .group(let id, let name, let items, let isExpanded) = siblingItem.representation {
-                    var items: [Element] = items
+                if isBelow, siblingItem.isGroup {
+                    var items: [Element] = siblingItem.items
                     items.insert(item, at: 0)
-                    let groupItem: Element = .group(id: id, name: name, items: items, isExpanded: isExpanded)
-                    self[index] = groupItem
+                    self[index].update(items: items)
                 } else {
                     insert(item, at: isBelow ? index + 1 : index)
                 }
                 return true
             }
-            if case .group(let id, let name, let items, let isExpanded) = siblingItem.representation {
-                var items: [Element] = items
+            if siblingItem.isGroup {
+                var items: [Element] = siblingItem.items
                 let didInsert: Bool = items.insert(item: item, at: place)
-                guard didInsert
-                else { continue }
-                let groupItem: Element = .group(id: id, name: name, items: items, isExpanded: isExpanded)
-                self[index] = groupItem
+                guard didInsert else { continue }
+                self[index].update(items: items)
                 return true
             }
         }
@@ -237,8 +179,7 @@ extension Array where Element: DeepItemProtocol {
     
     @discardableResult
     public mutating func remove(id: UUID) -> Bool {
-        guard let item = firstDeep(id: id)
-        else { return false }
+        guard let item = firstDeep(id: id) else { return false }
         switch item.representation {
         case .group:
             return removeGroup(id: id)
@@ -256,12 +197,11 @@ extension Array where Element: DeepItemProtocol {
                     remove(at: index)
                     return true
                 }
-            case .group(let _id, let name, let items, let isExpanded):
+            case .group(_, let items):
                 var items: [Element] = items
                 let didRemove: Bool = items.removeElement(id: id)
-                guard didRemove
-                else { continue }
-                self[index] = .group(id: _id, name: name, items: items, isExpanded: isExpanded)
+                guard didRemove else { continue }
+                self[index].update(items: items)
                 return true
             }
         }
@@ -274,16 +214,15 @@ extension Array where Element: DeepItemProtocol {
             switch item.representation {
             case .element:
                 continue
-            case .group(let _id, let name, let items, let isExpanded):
+            case .group(let _id, let items):
                 if _id == id {
                     remove(at: index)
                     return true
                 } else {
-                    var items = items
+                    var items: [Element] = items
                     let didRemove = items.removeGroup(id: id)
-                    guard didRemove
-                    else { continue }
-                    self[index] = .group(id: _id, name: name, items: items, isExpanded: isExpanded)
+                    guard didRemove else { continue }
+                    self[index].update(items: items)
                     return true
                 }
             }
@@ -299,9 +238,8 @@ extension DeepItemProtocol {
     public static func list(items: [Self], callback: (Self) -> ()) {
         for item in items {
             callback(item)
-            if case .group(_, _, let items, let isExpanded) = item.representation,
-               isExpanded {
-                list(items: items, callback: callback)
+            if item.isGroup, item.isExpanded {
+                list(items: item.items, callback: callback)
             }
         }
     }
@@ -309,22 +247,21 @@ extension DeepItemProtocol {
     public func index(from items: [Self]) -> Int {
         var index: Int = 0
         @discardableResult
-        func list(items: [Self]) -> Bool {
+        func traverse(items: [Self]) -> Bool {
             for item in items {
                 if item.id == id {
                     return true
                 }
                 index += 1
-                if case .group(_, _, let items, let isExpanded) = item.representation,
-                   isExpanded {
-                    if list(items: items) {
+                if item.isGroup, item.isExpanded {
+                    if traverse(items: item.items) {
                         return true
                     }
                 }
             }
             return false
         }
-        list(items: items)
+        traverse(items: items)
         return index
     }
 }
@@ -338,9 +275,8 @@ extension Array where Element: DeepItemProtocol {
             if item.id == id {
                 return item
             }
-            if case .group(_, _, let items, let isExpanded) = item.representation,
-               isExpanded {
-                if let item = items.firstDeep(id: id) {
+            if item.isGroup, item.isExpanded {
+                if let item = item.items.firstDeep(id: id) {
                     return item
                 }
             }
@@ -352,12 +288,11 @@ extension Array where Element: DeepItemProtocol {
         var count: Int = 0
         for item in self {
             count += 1
-            if case .group(_, _, let items, let isExpanded) = item.representation {
+            if item.isGroup {
                 if !withCollapsed {
-                    guard isExpanded
-                    else { continue }
+                    guard item.isExpanded else { continue }
                 }
-                count += items.countDeep(withCollapsed: withCollapsed)
+                count += item.items.countDeep(withCollapsed: withCollapsed)
             }
         }
         return count
@@ -366,13 +301,12 @@ extension Array where Element: DeepItemProtocol {
     public func countDeepGroups(withCollapsed: Bool) -> Int {
         var count: Int = 0
         for item in self {
-            if case .group(_, _, let items, let isExpanded) = item.representation {
+            if item.isGroup {
                 count += 1
                 if !withCollapsed {
-                    guard isExpanded
-                    else { continue }
+                    guard item.isExpanded else { continue }
                 }
-                count += items.countDeepGroups(withCollapsed: withCollapsed)
+                count += item.items.countDeepGroups(withCollapsed: withCollapsed)
             }
         }
         return count
@@ -383,8 +317,8 @@ extension Array where Element: DeepItemProtocol {
             if otherItem.id == item.id {
                 return 0
             }
-            if case .group(_, _, let items, _) = otherItem.representation {
-                if let depth = items.depth(for: item) {
+            if otherItem.isGroup {
+                if let depth = item.items.depth(for: item) {
                     return depth + 1
                 }
             }
@@ -404,8 +338,8 @@ extension Array where Element: DeepItemProtocol {
                 }
                 return 0
             }
-            if case .group(_, _, let items, _) = otherItem.representation {
-                if let depth = items.depth(for: place) {
+            if otherItem.isGroup {
+                if let depth = otherItem.items.depth(for: place) {
                     return depth + 1
                 }
             }

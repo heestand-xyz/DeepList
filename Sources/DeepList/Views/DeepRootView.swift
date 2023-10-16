@@ -16,10 +16,7 @@ public struct DeepRootView<T: DeepItemProtocol, Content: View>: View {
         
         ScrollView {
         
-            if case .group(_, _, let items, _) = rootItem.representation {
-                
-                DeepListView(items: items, content: content)
-            }
+            DeepListView(items: rootItem.items, content: content)
         }
     }
 }

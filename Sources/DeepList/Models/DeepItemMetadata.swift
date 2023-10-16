@@ -1,0 +1,2 @@
+
+typealias DeepItemMetadata = [String: Any]
