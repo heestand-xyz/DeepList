@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Deep Item
 
-public indirect enum DeepItem: DeepItemProtocol {
+public indirect enum DeepItem: DeepItemProtocol, Codable {
     case group(id: UUID, name: String, items: [Self], isExpanded: Bool)
     case element(id: UUID)
 }
@@ -13,7 +13,7 @@ extension DeepItem {
     
     public var representation: DeepItemRepresentation<Self> {
         switch self {
-        case .group(let id, let name, let items, let isExpanded):
+        case .group(let id, _, let items, _):
             return .group(id: id, items: items)
         case .element(let id):
             return .element(id: id)
@@ -82,17 +82,6 @@ extension DeepItem {
 // MARK: - Update Items
 
 extension DeepItem {
-    
-    public mutating func update(representation: DeepItemRepresentation<DeepItem>) {
-        switch representation {
-        case .group(let id, let items):
-            guard case .group(let _id, let name, _, let isExpanded) = self else { return }
-            guard id == _id else { return }
-            self = .group(id: id, name: name, items: items, isExpanded: isExpanded)
-        case .element(let id):
-            break
-        }
-    }
     
     public mutating func update(items: [Self]) {
         switch self {

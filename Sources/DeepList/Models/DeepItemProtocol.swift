@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol DeepItemProtocol: Codable, Equatable, Identifiable {
+public protocol DeepItemProtocol: Equatable, Identifiable {
     
     var id: UUID { get }
     var representation: DeepItemRepresentation<Self> { get }
