@@ -86,8 +86,8 @@ extension DeepItemProtocol {
         }
         
         if depth == placeDepth {
-            let index: Int = deepIndex(from: items)
-            let placeIndex: Int = placeItem.deepIndex(from: items)
+            let index: Int = deepIndex(from: items, onlyExpanded: true)
+            let placeIndex: Int = placeItem.deepIndex(from: items, onlyExpanded: true)
             if index - 1 == placeIndex, case .below = place {
                 return false
             } else if index + 1 == placeIndex, case .above = place {
@@ -253,11 +253,11 @@ extension DeepItemProtocol {
     
     @available(*, deprecated, renamed: "deepIndex(from:)")
     public func index(from items: [Self]) -> Int {
-        deepIndex(from: items)
+        deepIndex(from: items, onlyExpanded: true)
     }
     
     public func deepIndex(from items: [Self],
-                          onlyExpanded: Bool = true) -> Int {
+                          onlyExpanded: Bool) -> Int {
         var index: Int = 0
         @discardableResult
         func traverse(items: [Self]) -> Bool {
@@ -314,7 +314,7 @@ extension Array where Element: DeepItemProtocol {
     }
     
     public func deepCount(target: CountDeepTarget = .all,
-                          onlyExpanded: Bool = true) -> Int {
+                          onlyExpanded: Bool) -> Int {
         var count: Int = 0
         for item in self {
             if target == .all {
@@ -324,8 +324,7 @@ extension Array where Element: DeepItemProtocol {
                 if target == .elements {
                     count += 1
                 }
-            }
-            if item.isGroup {
+            } else if item.isGroup {
                 if target == .groups {
                     count += 1
                 }

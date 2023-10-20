@@ -6,7 +6,7 @@ let package = Package(
     name: "DeepList",
     platforms: [
         .iOS(.v16),
-        .macOS(.v11),
+        .macOS(.v13),
         .visionOS(.v1),
     ],
     products: [

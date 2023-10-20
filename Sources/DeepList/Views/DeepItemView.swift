@@ -1,13 +1,16 @@
 import SwiftUI
 
-public struct DeepItemView<T: DeepItemProtocol, Content: View>: View {
+public struct DeepItemView<DI: DeepItemProtocol, DD: DeepDraggable, Content: View>: View {
     
-    let item: T
-    let content: (T) -> Content
+    let item: DI
+    let draggable: (DI) -> DD
+    let content: (DI) -> Content
     
-    public init(item: T,
-                content: @escaping (T) -> Content) {
+    public init(item: DI,
+                draggable: @escaping (DI) -> DD,
+                content: @escaping (DI) -> Content) {
         self.item = item
+        self.draggable = draggable
         self.content = content
     }
     
@@ -22,16 +25,20 @@ public struct DeepItemView<T: DeepItemProtocol, Content: View>: View {
                     VStack(alignment: .leading, spacing: 0.0) {
                     
                         content(item)
+                            .draggable(draggable(item))
                         
                         if item.isExpanded {
                             
-                            DeepListView(items: items, content: content)
+                            DeepListView(items: items,
+                                         draggable: draggable,
+                                         content: content)
                         }
                     }
                     
                 case .element:
                     
                     content(item)
+                        .draggable(draggable(item))
                 }
             }
         }

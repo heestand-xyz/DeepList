@@ -1,13 +1,16 @@
 import SwiftUI
 
-public struct DeepListView<T: DeepItemProtocol, Content: View>: View {
+public struct DeepListView<DI: DeepItemProtocol, DD: DeepDraggable, Content: View>: View {
     
-    let items: [T]
-    let content: (T) -> Content
+    let items: [DI]
+    let draggable: (DI) -> DD
+    let content: (DI) -> Content
     
-    public init(items: [T],
-                content: @escaping (T) -> Content) {
+    public init(items: [DI],
+                draggable: @escaping (DI) -> DD,
+                content: @escaping (DI) -> Content) {
         self.items = items
+        self.draggable = draggable
         self.content = content
     }
     
@@ -17,7 +20,9 @@ public struct DeepListView<T: DeepItemProtocol, Content: View>: View {
             
             ForEach(items) { item in
                 
-                DeepItemView(item: item, content: content)
+                DeepItemView(item: item, 
+                             draggable: draggable, 
+                             content: content)
             }
         }
     }
