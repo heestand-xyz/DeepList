@@ -1,27 +1,25 @@
 import SwiftUI
 
-public struct DeepListView<DI: DeepItemProtocol, DD: DeepDraggable, Content: View>: View {
+struct DeepListView<DI: DeepItemProtocol, DD: DeepDraggable, Content: View>: View {
     
+    let style: DeepStyle
+    let rootItem: DI
     let items: [DI]
-    let draggable: (DI) -> DD
+    let drag: (DI) -> DD
+    let drop: ([DD], DeepPlace, CGPoint) -> Bool
     let content: (DI) -> Content
     
-    public init(items: [DI],
-                draggable: @escaping (DI) -> DD,
-                content: @escaping (DI) -> Content) {
-        self.items = items
-        self.draggable = draggable
-        self.content = content
-    }
-    
-    public var body: some View {
+    var body: some View {
         
         VStack(alignment: .leading, spacing: 0.0) {
             
             ForEach(items) { item in
                 
-                DeepItemView(item: item, 
-                             draggable: draggable, 
+                DeepItemView(style: style,
+                             rootItem: rootItem,
+                             item: item,
+                             drag: drag,
+                             drop: drop,
                              content: content)
             }
         }

@@ -34,11 +34,16 @@ extension DeepItemProtocol {
 extension DeepItemProtocol {
 
     public var items: [Self] {
-        switch representation {
-        case .group(_, let items):
-            items
-        case .element:
-            []
+        get {
+            switch representation {
+            case .group(_, let items):
+                items
+            case .element:
+                []
+            }
+        }
+        set {
+            update(items: newValue)
         }
     }
 }
