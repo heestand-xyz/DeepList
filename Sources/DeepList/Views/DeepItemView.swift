@@ -76,6 +76,16 @@ struct DeepItemView<DI: DeepItemProtocol, DD: DeepDraggable, Content: View>: Vie
                     self.isTargeted = isTargeted
                 }
             
+            VStack {
+                if isTargetedAbove {
+                    DeepSeparatorView(style: style, rootItem: rootItem, deepPlace: .above(itemID: item.id))
+                    Spacer()
+                } else if isTargetedBelow {
+                    Spacer()
+                    DeepSeparatorView(style: style, rootItem: rootItem, deepPlace: .below(itemID: item.id))
+                }
+            }
+            
             if isTargeted || isTargetedAbove || isTargetedBelow {
                 
                 VStack(spacing: 0.0) {
@@ -91,16 +101,6 @@ struct DeepItemView<DI: DeepItemProtocol, DD: DeepDraggable, Content: View>: Vie
                         }) { isTargeted in
                             self.isTargetedBelow = isTargeted
                         }
-                }
-            }
-            
-            VStack {
-                if isTargetedAbove {
-                    DeepSeparatorView(style: style, rootItem: rootItem, deepPlace: .above(itemID: item.id))
-                    Spacer()
-                } else if isTargetedBelow {
-                    Spacer()
-                    DeepSeparatorView(style: style, rootItem: rootItem, deepPlace: .below(itemID: item.id))
                 }
             }
         }
