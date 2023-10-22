@@ -19,6 +19,10 @@ struct DeepSeparatorView<DI: DeepItemProtocol>: View {
         rootItem.items.depth(for: deepPlace) ?? 0
     }
     
+    private var isUnderGroup: Bool {
+        rootItem.items.isUnderGroup(for: deepPlace) ?? false
+    }
+    
     var body: some View {
         Capsule()
             .frame(height: style.separatorHeight)
@@ -36,6 +40,7 @@ struct DeepSeparatorView<DI: DeepItemProtocol>: View {
             }())
             .foregroundColor(.accentColor)
 //            .foregroundColor(isRecursive ? .red : isNew ? .accentColor : .primary.opacity(0.25))
-            .padding(.leading, style.indentationPadding * CGFloat(depth))
+//            .padding(.leading, style.indentationPadding * CGFloat(depth))
+            .padding(.leading, isUnderGroup ? style.indentationPadding : 0.0)
     }
 }

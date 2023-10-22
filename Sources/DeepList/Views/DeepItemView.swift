@@ -1,10 +1,10 @@
 import SwiftUI
 
-struct DeepItemView<DI: DeepItemProtocol, DD: DeepDraggable, Content: View>: View {
+struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, Content: View>: View {
     
     let style: DeepStyle
-    let rootItem: DI
-    let item: DI
+    @ObservedObject var rootItem: DI
+    @ObservedObject var item: DI
     let drag: (DI) -> DD
     let drop: ([DD], DeepPlace, CGPoint) -> Bool
     let content: (DI) -> Content
@@ -53,6 +53,7 @@ struct DeepItemView<DI: DeepItemProtocol, DD: DeepDraggable, Content: View>: Vie
                                      drag: drag,
                                      drop: drop,
                                      content: content)
+                        .padding(.horizontal, style.indentationPadding)
                     }
                 }
                 

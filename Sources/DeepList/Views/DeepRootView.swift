@@ -1,9 +1,9 @@
 import SwiftUI
 
-public struct DeepRootView<DI: DeepItemProtocol, DD: DeepDraggable, Content: View>: View {
+public struct DeepRootView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, Content: View>: View {
     
     let style: DeepStyle
-    let rootItem: DI
+    @ObservedObject var rootItem: DI
     let drag: (DI) -> DD
     let drop: ([DD], DeepPlace, CGPoint) -> Bool
     let content: (DI) -> Content
@@ -39,6 +39,7 @@ public struct DeepRootView<DI: DeepItemProtocol, DD: DeepDraggable, Content: Vie
                         } isTargeted: { isTarget in
                             self.isTarget = isTarget
                         }
+                        .padding([.horizontal, .top], style.listPadding)
                     
                     VStack(spacing: 0.0) {
                         
@@ -57,6 +58,7 @@ public struct DeepRootView<DI: DeepItemProtocol, DD: DeepDraggable, Content: Vie
                                 )
                             }
                         }
+                        .padding(style.listPadding)
                         
                         Spacer(minLength: 0.0)
                             .frame(height: style.scrollBottomEdgeInset)

@@ -1,9 +1,9 @@
 import SwiftUI
 
-struct DeepListView<DI: DeepItemProtocol, DD: DeepDraggable, Content: View>: View {
+struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, Content: View>: View {
     
     let style: DeepStyle
-    let rootItem: DI
+    @ObservedObject var rootItem: DI
     let items: [DI]
     let drag: (DI) -> DD
     let drop: ([DD], DeepPlace, CGPoint) -> Bool
@@ -11,17 +11,28 @@ struct DeepListView<DI: DeepItemProtocol, DD: DeepDraggable, Content: View>: Vie
     
     var body: some View {
         
-        VStack(alignment: .leading, spacing: 0.0) {
+        if !items.isEmpty {
             
-            ForEach(items) { item in
+            ZStack {
+
+                RoundedRectangle(cornerRadius: style.listCornerRadius)
+                    .foregroundColor(style.backgroundColor)
+                    .layoutPriority(-1)
                 
-                DeepItemView(style: style,
-                             rootItem: rootItem,
-                             item: item,
-                             drag: drag,
-                             drop: drop,
-                             content: content)
+                VStack(alignment: .leading, spacing: 0.0) {
+                    
+                    ForEach(items) { item in
+                        
+                        DeepItemView(style: style,
+                                     rootItem: rootItem,
+                                     item: item,
+                                     drag: drag,
+                                     drop: drop,
+                                     content: content)
+                    }
+                }
             }
+//            .padding(.vertical, style.listPadding)
         }
     }
 }
