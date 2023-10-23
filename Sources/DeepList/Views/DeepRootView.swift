@@ -39,7 +39,7 @@ public struct DeepRootView<DI: DeepItemProtocol & ObservableObject, DD: DeepDrag
                         } isTargeted: { isTarget in
                             self.isTarget = isTarget
                         }
-                        .padding([.horizontal, .top], style.listPadding)
+//                        .padding([.horizontal, .top], style.listPadding)
                     
                     VStack(spacing: 0.0) {
                         
@@ -62,7 +62,7 @@ public struct DeepRootView<DI: DeepItemProtocol & ObservableObject, DD: DeepDrag
                                 )
                             }
                         }
-                        .padding(style.listPadding)
+//                        .padding(style.listPadding)
                         
                         Spacer(minLength: 0.0)
                             .frame(height: style.scrollBottomEdgeInset)

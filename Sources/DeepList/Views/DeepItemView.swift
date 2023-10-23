@@ -29,20 +29,26 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                     }
                     .draggable(drag(item)) {
                         
-                        VStack(alignment: .leading, spacing: 0.0) {
+                        ZStack {
                             
-                            content(item)
-                                .frame(height: style.rowHeight)
+                            style.backgroundColor
+                                .layoutPriority(-1)
                             
-                            if item.isExpanded {
+                            VStack(alignment: .leading, spacing: 0.0) {
                                 
-                                DeepListView(style: style,
-                                             rootItem: rootItem,
-                                             parentItem: item,
-                                             items: items,
-                                             drag: drag,
-                                             drop: drop,
-                                             content: content)
+                                content(item)
+                                    .frame(height: style.rowHeight)
+                                
+                                if item.isExpanded {
+                                    
+                                    DeepListView(style: style,
+                                                 rootItem: rootItem,
+                                                 parentItem: item,
+                                                 items: items,
+                                                 drag: drag,
+                                                 drop: drop,
+                                                 content: content)
+                                }
                             }
                         }
                     }
@@ -70,7 +76,17 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                         .layoutPriority(-1)
                     content(item)
                 }
-                .draggable(drag(item))
+                .draggable(drag(item)) {
+                    
+                    ZStack {
+                        
+                        style.backgroundColor
+                            .layoutPriority(-1)
+                        
+                        content(item)
+                            .frame(height: style.rowHeight)
+                    }
+                }
             }
             .frame(height: style.rowHeight)
         }

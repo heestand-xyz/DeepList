@@ -12,6 +12,10 @@ struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
     
     @State private var isTargeted: Bool = false
     
+    private var isRoot: Bool {
+        rootItem == parentItem
+    }
+    
     private var showBottomSection: Bool {
         rootItem != parentItem || items.last?.isGroup == true
     }
@@ -26,9 +30,11 @@ struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
 
             ZStack {
 
-                RoundedRectangle(cornerRadius: style.listCornerRadius)
-                    .foregroundColor(style.backgroundColor)
-                    .layoutPriority(-1)
+                if !isRoot {
+                    RoundedRectangle(cornerRadius: style.listCornerRadius)
+                        .foregroundColor(style.backgroundColor)
+                        .layoutPriority(-1)                    
+                }
                 
                 VStack(alignment: .leading, spacing: 0.0) {
                     
