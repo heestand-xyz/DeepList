@@ -21,8 +21,15 @@ public struct DeepRootView<DI: DeepItemProtocol & ObservableObject, DD: DeepDrag
         self.content = content
     }
     
-    @State private var isTarget: Bool = false
-    @State private var height: CGFloat = 0.0
+    @State private var isTargetTop: Bool = false
+    @State private var isTargetBottom: Bool = false
+    @State private var outerHeight: CGFloat = 0.0
+    @State private var innerHeight: CGFloat = 0.0
+    
+    private var remainingHeight: CGFloat {
+        let totalHeight: CGFloat = style.scrollTopEdgeInset + innerHeight
+        return max(style.scrollBottomEdgeInset, outerHeight - totalHeight)
+    }
     
     public var body: some View {
         
@@ -30,28 +37,61 @@ public struct DeepRootView<DI: DeepItemProtocol & ObservableObject, DD: DeepDrag
             
             ScrollView {
                 
-                ZStack(alignment: .top) {
+                VStack(spacing: 0.0) {
                     
                     Color.gray.opacity(0.001)
-                        .frame(height: height)
+                        .frame(height: style.scrollTopEdgeInset)
+                        .dropDestination(for: DD.self) { drops, location in
+                            drop(drops, .top, location)
+                        } isTargeted: { isTarget in
+                            isTargetTop = isTarget
+                        }
+                        .overlay(alignment: .bottom) {
+                            if isTargetTop {
+                                DeepSeparatorView(
+                                    style: style,
+                                    rootItem: rootItem,
+                                    parentItem: rootItem,
+                                    deepPlace: .top,
+                                    isGroup: false,
+                                    isExpanded: false
+                                )
+                            }
+                        }
+                    
+                    DeepListView(style: style,
+                                 rootItem: rootItem,
+                                 parentItem: rootItem,
+                                 items: rootItem.items,
+                                 drag: drag,
+                                 drop: drop,
+                                 content: content)
+                    .background {
+                        GeometryReader { geometry in
+                            Color.clear
+                                .onAppear {
+                                    innerHeight = geometry.size.height
+                                }
+                                .onChange(of: geometry.size.height) { newHeight in
+                                    innerHeight = newHeight
+                                }
+                        }
+                    }
+                    .onChange(of: rootItem.items.isEmpty) { newIsEmpty in
+                        if newIsEmpty {
+                            innerHeight = 0.0
+                        }
+                    }
+                    
+                    Color.gray.opacity(0.001)
+                        .frame(height: remainingHeight)
                         .dropDestination(for: DD.self) { drops, location in
                             drop(drops, .bottom, location)
                         } isTargeted: { isTarget in
-                            self.isTarget = isTarget
+                            isTargetBottom = isTarget
                         }
-//                        .padding([.horizontal, .top], style.listPadding)
-                    
-                    VStack(spacing: 0.0) {
-                        
-                        DeepListView(style: style,
-                                     rootItem: rootItem,
-                                     parentItem: rootItem,
-                                     items: rootItem.items,
-                                     drag: drag,
-                                     drop: drop,
-                                     content: content)
-                        .overlay(alignment: .bottom) {
-                            if isTarget {
+                        .overlay(alignment: .top) {
+                            if isTargetBottom {
                                 DeepSeparatorView(
                                     style: style,
                                     rootItem: rootItem,
@@ -62,18 +102,13 @@ public struct DeepRootView<DI: DeepItemProtocol & ObservableObject, DD: DeepDrag
                                 )
                             }
                         }
-//                        .padding(style.listPadding)
-                        
-                        Spacer(minLength: 0.0)
-                            .frame(height: style.scrollBottomEdgeInset)
-                    }
                 }
             }
             .onAppear {
-                height = geometry.size.height
+                outerHeight = geometry.size.height
             }
-            .onChange(of: geometry.size.height) { newValue in
-                height = newValue
+            .onChange(of: geometry.size.height) { newHeight in
+                outerHeight = newHeight
             }
         }
     }

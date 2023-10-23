@@ -457,4 +457,28 @@ extension Array where Element: DeepItemProtocol {
         }
         return nil
     }
+    
+    public func isOverGroup(for place: DeepPlace) -> Bool? {
+        if case .top = place {
+            return false
+        }
+        if case .bottom = place {
+            return false
+        }
+        for otherItem in self {
+            if otherItem.id == place.itemID {
+                if case .above = place,
+                   case .group = otherItem.representation {
+                    return true
+                }
+                return false
+            }
+            if otherItem.isGroup {
+                if otherItem.items.isOverGroup(for: place) == true {
+                    return true
+                }
+            }
+        }
+        return nil
+    }
 }

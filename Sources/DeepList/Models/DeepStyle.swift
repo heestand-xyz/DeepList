@@ -12,6 +12,7 @@ public struct DeepStyle {
     public var rowHeight: CGFloat
     public var indentationPadding: CGFloat
     public var separatorHeight: CGFloat
+    public var scrollTopEdgeInset: CGFloat
     public var scrollBottomEdgeInset: CGFloat
     public var listPadding: CGFloat
     public var listCornerRadius: CGFloat
@@ -27,6 +28,7 @@ public struct DeepStyle {
         }(),
         indentationPadding: CGFloat = 16,
         separatorHeight: CGFloat = 3,
+        scrollTopEdgeInset: CGFloat = 0.0,
         scrollBottomEdgeInset: CGFloat = 0.0,
         listPadding: CGFloat = 0.0,
         listCornerRadius: CGFloat = 0.0,
@@ -35,6 +37,7 @@ public struct DeepStyle {
         self.rowHeight = rowHeight
         self.indentationPadding = indentationPadding
         self.separatorHeight = separatorHeight
+        self.scrollTopEdgeInset = scrollTopEdgeInset
         self.scrollBottomEdgeInset = scrollBottomEdgeInset
         self.listPadding = listPadding
         self.listCornerRadius = listCornerRadius

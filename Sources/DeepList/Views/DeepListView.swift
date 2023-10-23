@@ -11,10 +11,7 @@ struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
     let content: (DI) -> Content
     
     @State private var isTargeted: Bool = false
-    
-    private var isRoot: Bool {
-        rootItem == parentItem
-    }
+    @State private var middleItemIDTargeted: UUID?
     
     private var showBottomSection: Bool {
         rootItem != parentItem || items.last?.isGroup == true
@@ -30,12 +27,6 @@ struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
 
             ZStack {
 
-                if !isRoot {
-                    RoundedRectangle(cornerRadius: style.listCornerRadius)
-                        .foregroundColor(style.backgroundColor)
-                        .layoutPriority(-1)                    
-                }
-                
                 VStack(alignment: .leading, spacing: 0.0) {
                     
                     ForEach(items) { item in
@@ -47,6 +38,34 @@ struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                                      drag: drag,
                                      drop: drop,
                                      content: content)
+                        
+                        let index = items.firstIndex(of: item) ?? 0
+                        if item != items.last  {
+                            let nextItem = items[index + 1]
+                            if item.isGroup && nextItem.isGroup {
+                                
+                                Color.gray.opacity(0.001)
+                                    .frame(height: style.listPadding)
+                                    .dropDestination(for: DD.self, action: { drops, location in
+                                        drop(drops, .above(itemID: nextItem.id), location)
+                                    }) { isTargeted in
+                                        middleItemIDTargeted = isTargeted ? nextItem.id : nil
+                                    }
+                                    .overlay(alignment: .top) {
+                                        if let id: UUID = middleItemIDTargeted,
+                                           id == nextItem.id {
+                                            DeepSeparatorView(
+                                                style: style,
+                                                rootItem: rootItem,
+                                                parentItem: parentItem,
+                                                deepPlace: .above(itemID: id),
+                                                isGroup: nextItem.isGroup,
+                                                isExpanded: nextItem.isExpanded
+                                            )
+                                        }
+                                    }
+                            }
+                        }
                     }
                     
                     if showBottomSection {
@@ -72,7 +91,6 @@ struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                     }
                 }
             }
-//            .padding(.vertical, style.listPadding)
         }
     }
 }

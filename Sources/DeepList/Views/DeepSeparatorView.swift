@@ -30,6 +30,10 @@ struct DeepSeparatorView<DI: DeepItemProtocol>: View {
         rootItem.items.isUnderGroup(for: deepPlace) ?? false
     }
     
+    private var isOverGroup: Bool {
+        rootItem.items.isOverGroup(for: deepPlace) ?? false
+    }
+    
     private var isAfterGroup: Bool {
         if case .below(_, let after) = deepPlace {
             return after
@@ -37,20 +41,24 @@ struct DeepSeparatorView<DI: DeepItemProtocol>: View {
         return false
     }
     
+    private var isOneLevelUp: Bool {
+        (!isRoot && isAfterGroup && isGroup && isExpanded) || isOverGroup
+    }
+    
     var body: some View {
         Capsule()
             .frame(height: style.separatorHeight)
             .offset(y: {
                 switch deepPlace {
-                case .top, .above:
+                case .bottom, .above:
                     -style.separatorHeight / 2
-                case .below, .bottom:
+                case .top, .below:
                     style.separatorHeight / 2
                 }
             }())
             .foregroundColor(.accentColor)
 //            .foregroundColor(isRecursive ? .red : isNew ? .accentColor : .primary.opacity(0.25))
-//            .padding(.leading, style.indentationPadding * CGFloat(depth))
-            .padding(.leading, !isRoot && isAfterGroup && isGroup && isExpanded ? -style.indentationPadding : isUnderGroup ? style.indentationPadding : 0.0)
+            .padding(.horizontal, isOneLevelUp ? -style.indentationPadding : 0.0)
+            .allowsHitTesting(false)
     }
 }

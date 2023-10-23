@@ -19,54 +19,64 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
         switch item.representation {
         case .group(_, let items):
             
-            VStack(alignment: .leading, spacing: 0.0) {
+            ZStack {
                 
-                target {
-                    ZStack {
-                        Color.gray.opacity(0.001)
-                            .layoutPriority(-1)
-                        content(item)
-                    }
-                    .draggable(drag(item)) {
-                        
+                RoundedRectangle(cornerRadius: style.listCornerRadius)
+                    .foregroundColor(style.backgroundColor)
+                    .layoutPriority(-1)
+                
+                VStack(alignment: .leading, spacing: 0.0) {
+                    
+                    target {
                         ZStack {
-                            
-                            style.backgroundColor
+                            Color.gray.opacity(0.001)
                                 .layoutPriority(-1)
+                            content(item)
+//                                .padding(.leading, style.indentationPadding)
+                        }
+                        .draggable(drag(item)) {
                             
-                            VStack(alignment: .leading, spacing: 0.0) {
+                            ZStack {
                                 
-                                content(item)
-                                    .frame(height: style.rowHeight)
+                                RoundedRectangle(cornerRadius: style.listCornerRadius)
+                                    .foregroundColor(style.backgroundColor)
+                                    .layoutPriority(-1)
                                 
-                                if item.isExpanded {
+                                VStack(alignment: .leading, spacing: 0.0) {
                                     
-                                    DeepListView(style: style,
-                                                 rootItem: rootItem,
-                                                 parentItem: item,
-                                                 items: items,
-                                                 drag: drag,
-                                                 drop: drop,
-                                                 content: content)
+                                    content(item)
+                                        .padding(.leading, style.indentationPadding)
+                                        .frame(height: style.rowHeight)
+                                    
+                                    if item.isExpanded {
+                                        
+                                        DeepListView(style: style,
+                                                     rootItem: rootItem,
+                                                     parentItem: item,
+                                                     items: items,
+                                                     drag: drag,
+                                                     drop: drop,
+                                                     content: content)
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                .frame(height: style.rowHeight)
-                
-                if item.isExpanded {
+                    .frame(height: style.rowHeight)
                     
-                    DeepListView(style: style,
-                                 rootItem: rootItem,
-                                 parentItem: item,
-                                 items: items,
-                                 drag: drag,
-                                 drop: drop,
-                                 content: content)
-                    .padding(.horizontal, style.indentationPadding)
+                    if item.isExpanded {
+                        
+                        DeepListView(style: style,
+                                     rootItem: rootItem,
+                                     parentItem: item,
+                                     items: items,
+                                     drag: drag,
+                                     drop: drop,
+                                     content: content)
+                    }
                 }
             }
+            .padding(.horizontal, style.indentationPadding)
             
         case .element:
             
@@ -80,7 +90,8 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                     
                     ZStack {
                         
-                        style.backgroundColor
+                        RoundedRectangle(cornerRadius: style.listCornerRadius)
+                            .foregroundColor(style.backgroundColor)
                             .layoutPriority(-1)
                         
                         content(item)
