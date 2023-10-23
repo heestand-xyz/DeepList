@@ -42,29 +42,29 @@ final class DeepListTests: XCTestCase {
     
     func testCount() {
         
-        XCTAssertEqual(13, all.root.items.deepCount(target: .all, onlyExpanded: false))
-        XCTAssertEqual(10, all.root.items.deepCount(target: .all, onlyExpanded: true))
-        XCTAssertEqual(9, all.root.items.deepCount(target: .elements, onlyExpanded: false))
-        XCTAssertEqual(6, all.root.items.deepCount(target: .elements, onlyExpanded: true))
-        XCTAssertEqual(4, all.root.items.deepCount(target: .groups, onlyExpanded: false))
-        XCTAssertEqual(4, all.root.items.deepCount(target: .groups, onlyExpanded: true))
+        XCTAssertEqual(13, all.root.items.deepCount(target: .all, expansion: .all))
+        XCTAssertEqual(10, all.root.items.deepCount(target: .all, expansion: .open))
+        XCTAssertEqual(9, all.root.items.deepCount(target: .elements, expansion: .all))
+        XCTAssertEqual(6, all.root.items.deepCount(target: .elements, expansion: .open))
+        XCTAssertEqual(4, all.root.items.deepCount(target: .groups, expansion: .all))
+        XCTAssertEqual(4, all.root.items.deepCount(target: .groups, expansion: .open))
     }
     
     func testIndices() {
         
-        XCTAssertEqual(0, all.groupA.deepIndex(from: all.root.items, onlyExpanded: false))
-        XCTAssertEqual(1, all.elementA1.deepIndex(from: all.root.items, onlyExpanded: false))
-        XCTAssertEqual(2, all.elementA2.deepIndex(from: all.root.items, onlyExpanded: false))
-        XCTAssertEqual(3, all.elementA3.deepIndex(from: all.root.items, onlyExpanded: false))
-        XCTAssertEqual(4, all.groupB.deepIndex(from: all.root.items, onlyExpanded: false))
-        XCTAssertEqual(5, all.groupBX.deepIndex(from: all.root.items, onlyExpanded: false))
-        XCTAssertEqual(6, all.elementBX1.deepIndex(from: all.root.items, onlyExpanded: false))
-        XCTAssertEqual(7, all.elementBX2.deepIndex(from: all.root.items, onlyExpanded: false))
-        XCTAssertEqual(8, all.elementBX3.deepIndex(from: all.root.items, onlyExpanded: false))
-        XCTAssertEqual(9, all.elementBY.deepIndex(from: all.root.items, onlyExpanded: false))
-        XCTAssertEqual(10, all.elementBZ.deepIndex(from: all.root.items, onlyExpanded: false))
-        XCTAssertEqual(11, all.groupC.deepIndex(from: all.root.items, onlyExpanded: false))
-        XCTAssertEqual(12, all.elementD.deepIndex(from: all.root.items, onlyExpanded: false))
+        XCTAssertEqual(0, all.groupA.deepIndex(from: all.root.items, expansion: .all))
+        XCTAssertEqual(1, all.elementA1.deepIndex(from: all.root.items, expansion: .all))
+        XCTAssertEqual(2, all.elementA2.deepIndex(from: all.root.items, expansion: .all))
+        XCTAssertEqual(3, all.elementA3.deepIndex(from: all.root.items, expansion: .all))
+        XCTAssertEqual(4, all.groupB.deepIndex(from: all.root.items, expansion: .all))
+        XCTAssertEqual(5, all.groupBX.deepIndex(from: all.root.items, expansion: .all))
+        XCTAssertEqual(6, all.elementBX1.deepIndex(from: all.root.items, expansion: .all))
+        XCTAssertEqual(7, all.elementBX2.deepIndex(from: all.root.items, expansion: .all))
+        XCTAssertEqual(8, all.elementBX3.deepIndex(from: all.root.items, expansion: .all))
+        XCTAssertEqual(9, all.elementBY.deepIndex(from: all.root.items, expansion: .all))
+        XCTAssertEqual(10, all.elementBZ.deepIndex(from: all.root.items, expansion: .all))
+        XCTAssertEqual(11, all.groupC.deepIndex(from: all.root.items, expansion: .all))
+        XCTAssertEqual(12, all.elementD.deepIndex(from: all.root.items, expansion: .all))
     }
     
     func testIsNew() throws {
@@ -72,11 +72,11 @@ final class DeepListTests: XCTestCase {
         XCTAssertTrue(all.groupA.isNew(place: .above(itemID: all.elementD.id), in: all.root.items) == true)
         XCTAssertTrue(all.groupB.isNew(place: .above(itemID: all.elementD.id), in: all.root.items) == true)
         XCTAssertFalse(all.groupC.isNew(place: .above(itemID: all.elementD.id), in: all.root.items) == true)
-        XCTAssertTrue(all.groupA.isNew(place: .below(itemID: all.elementD.id), in: all.root.items) == true)
+        XCTAssertTrue(all.groupA.isNew(place: .below(itemID: all.elementD.id, after: false), in: all.root.items) == true)
         XCTAssertTrue(all.elementD.isNew(place: .above(itemID: all.groupA.id), in: all.root.items) == true)
-        XCTAssertTrue(all.elementD.isNew(place: .below(itemID: all.groupA.id), in: all.root.items) == true)
+        XCTAssertTrue(all.elementD.isNew(place: .below(itemID: all.groupA.id, after: false), in: all.root.items) == true)
         XCTAssertFalse(all.elementD.isNew(place: .above(itemID: all.elementD.id), in: all.root.items) == true)
-        XCTAssertFalse(all.elementD.isNew(place: .below(itemID: all.elementD.id), in: all.root.items) == true)
+        XCTAssertFalse(all.elementD.isNew(place: .below(itemID: all.elementD.id, after: false), in: all.root.items) == true)
         
         XCTAssertFalse(all.elementD.isNew(place: .bottom, in: all.root.items) == true)
         XCTAssertTrue(all.elementA3.isNew(place: .bottom, in: all.root.items) == true)

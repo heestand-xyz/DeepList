@@ -4,7 +4,8 @@ public enum DeepPlace {
    
     case top
     case above(itemID: UUID)
-    case below(itemID: UUID)
+    /// `after` is only used for groups
+    case below(itemID: UUID, after: Bool)
     case bottom
     
     public var itemID: UUID? {
@@ -13,7 +14,7 @@ public enum DeepPlace {
             return nil
         case .above(let itemID):
             return itemID
-        case .below(let itemID):
+        case .below(let itemID, _):
             return itemID
         case .bottom:
             return nil

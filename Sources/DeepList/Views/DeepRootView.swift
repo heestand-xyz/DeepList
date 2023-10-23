@@ -45,6 +45,7 @@ public struct DeepRootView<DI: DeepItemProtocol & ObservableObject, DD: DeepDrag
                         
                         DeepListView(style: style,
                                      rootItem: rootItem,
+                                     parentItem: rootItem,
                                      items: rootItem.items,
                                      drag: drag,
                                      drop: drop,
@@ -54,7 +55,10 @@ public struct DeepRootView<DI: DeepItemProtocol & ObservableObject, DD: DeepDrag
                                 DeepSeparatorView(
                                     style: style,
                                     rootItem: rootItem,
-                                    deepPlace: .bottom
+                                    parentItem: rootItem,
+                                    deepPlace: .bottom,
+                                    isGroup: false,
+                                    isExpanded: false
                                 )
                             }
                         }

@@ -4,6 +4,7 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
     
     let style: DeepStyle
     @ObservedObject var rootItem: DI
+    @ObservedObject var parentItem: DI
     @ObservedObject var item: DI
     let drag: (DI) -> DD
     let drop: ([DD], DeepPlace, CGPoint) -> Bool
@@ -14,61 +15,68 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
     @State private var isTargetedBelow: Bool = false
     
     var body: some View {
-        
-        ZStack {
+         
+        switch item.representation {
+        case .group(_, let items):
             
-            switch item.representation {
-            case .group(_, let items):
-                
-                VStack(alignment: .leading, spacing: 0.0) {
-                    
-                    target {
-                        content(item)
-                            .draggable(drag(item)) {
-                                
-                                VStack(alignment: .leading, spacing: 0.0) {
-                                    
-                                    content(item)
-                                        .frame(height: style.rowHeight)
-                                    
-                                    if item.isExpanded {
-                                        
-                                        DeepListView(style: style,
-                                                     rootItem: rootItem,
-                                                     items: items,
-                                                     drag: drag,
-                                                     drop: drop,
-                                                     content: content)
-                                    }
-                                }
-                            }                        
-                    }
-                    .frame(height: style.rowHeight)
-                    
-                    if item.isExpanded {
-                        
-                        DeepListView(style: style,
-                                     rootItem: rootItem,
-                                     items: items,
-                                     drag: drag,
-                                     drop: drop,
-                                     content: content)
-                        .padding(.horizontal, style.indentationPadding)
-                    }
-                }
-                
-            case .element:
+            VStack(alignment: .leading, spacing: 0.0) {
                 
                 target {
-                    content(item)
-                        .draggable(drag(item))
+                    ZStack {
+                        Color.gray.opacity(0.001)
+                            .layoutPriority(-1)
+                        content(item)
+                    }
+                    .draggable(drag(item)) {
+                        
+                        VStack(alignment: .leading, spacing: 0.0) {
+                            
+                            content(item)
+                                .frame(height: style.rowHeight)
+                            
+                            if item.isExpanded {
+                                
+                                DeepListView(style: style,
+                                             rootItem: rootItem,
+                                             parentItem: item,
+                                             items: items,
+                                             drag: drag,
+                                             drop: drop,
+                                             content: content)
+                            }
+                        }
+                    }
                 }
                 .frame(height: style.rowHeight)
+                
+                if item.isExpanded {
+                    
+                    DeepListView(style: style,
+                                 rootItem: rootItem,
+                                 parentItem: item,
+                                 items: items,
+                                 drag: drag,
+                                 drop: drop,
+                                 content: content)
+                    .padding(.horizontal, style.indentationPadding)
+                }
             }
+            
+        case .element:
+            
+            target {
+                ZStack {
+                    Color.gray.opacity(0.001)
+                        .layoutPriority(-1)
+                    content(item)
+                }
+                .draggable(drag(item))
+            }
+            .frame(height: style.rowHeight)
         }
     }
     
-    private func target<Content: View>(content: () -> Content) -> some View {
+    private func target<T: View>(content: () -> T) -> some View {
         
         ZStack {
             
@@ -79,11 +87,25 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
             
             VStack {
                 if isTargetedAbove {
-                    DeepSeparatorView(style: style, rootItem: rootItem, deepPlace: .above(itemID: item.id))
+                    DeepSeparatorView(
+                        style: style,
+                        rootItem: rootItem,
+                        parentItem: parentItem,
+                        deepPlace: .above(itemID: item.id),
+                        isGroup: item.isGroup,
+                        isExpanded: item.isExpanded
+                    )
                     Spacer()
                 } else if isTargetedBelow {
                     Spacer()
-                    DeepSeparatorView(style: style, rootItem: rootItem, deepPlace: .below(itemID: item.id))
+                    DeepSeparatorView(
+                        style: style,
+                        rootItem: rootItem,
+                        parentItem: parentItem,
+                        deepPlace: .below(itemID: item.id, after: item.isGroup && !item.isExpanded),
+                        isGroup: item.isGroup,
+                        isExpanded: item.isExpanded
+                    )
                 }
             }
             
@@ -98,7 +120,7 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                         }
                     Color.gray.opacity(0.001)
                         .dropDestination(for: DD.self, action: { drops, location in
-                            drop(drops, .below(itemID: item.id), location)
+                            drop(drops, .below(itemID: item.id, after: item.isGroup && !item.isExpanded), location)
                         }) { isTargeted in
                             self.isTargetedBelow = isTargeted
                         }

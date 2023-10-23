@@ -86,13 +86,17 @@ extension DeepItemProtocol {
             return nil
         }
         
-        if case .below = place,  placeItem.isGroup, placeItem.isExpanded {
-            placeDepth += 1
+        var placeIsAfter: Bool = false
+        if case .below(_, let after) = place {
+            placeIsAfter = true
+            if !after, placeItem.isGroup, placeItem.isExpanded {
+                placeDepth += 1
+            }
         }
         
         if depth == placeDepth {
-            let index: Int = deepIndex(from: items, onlyExpanded: true)
-            let placeIndex: Int = placeItem.deepIndex(from: items, onlyExpanded: true)
+            let index: Int = deepIndex(from: items, expansion: placeIsAfter ? .none : .open)
+            let placeIndex: Int = placeItem.deepIndex(from: items, expansion: placeIsAfter ? .none : .open)
             if index - 1 == placeIndex, case .below = place {
                 return false
             } else if index + 1 == placeIndex, case .above = place {
@@ -105,7 +109,7 @@ extension DeepItemProtocol {
     
     public func isRecursive(place: DeepPlace) -> Bool {
         guard let placeItemID = place.itemID, isGroup else { return false }
-        if case .below = place, placeItemID == id {
+        if case .below(_, let after) = place, !after, placeItemID == id {
             return true
         }
         func check(items: [Self]) -> Bool {
@@ -161,10 +165,12 @@ extension Array where Element: DeepItemProtocol {
             guard siblingItem.id != item.id else { continue }
             if siblingItem.id == place.itemID {
                 var isBelow: Bool = false
-                if case .below = place {
+                var isAfter: Bool = false
+                if case .below(_, let after) = place {
                     isBelow = true
+                    isAfter = after
                 }
-                if isBelow, siblingItem.isGroup {
+                if isBelow, !isAfter, siblingItem.isGroup {
                     var items: [Element] = siblingItem.items
                     items.insert(item, at: 0)
                     self[index].update(items: items)
@@ -258,20 +264,30 @@ extension DeepItemProtocol {
     
     @available(*, deprecated, renamed: "deepIndex(from:)")
     public func index(from items: [Self]) -> Int {
-        deepIndex(from: items, onlyExpanded: true)
+        deepIndex(from: items, expansion: .open)
     }
     
     public func deepIndex(from items: [Self],
-                          onlyExpanded: Bool) -> Int {
+                          expansion: DeepExpansion) -> Int {
         var index: Int = 0
         @discardableResult
         func traverse(items: [Self]) -> Bool {
-            for item in items {
+            loop: for item in items {
                 if item.id == id {
                     return true
                 }
                 index += 1
-                if item.isGroup, onlyExpanded ? item.isExpanded : true {
+                if item.isGroup {
+                    switch expansion {
+                    case .all:
+                        break
+                    case .open:
+                        guard item.isExpanded else {
+                            continue loop
+                        }
+                    case .none:
+                        continue loop
+                    }
                     if traverse(items: item.items) {
                         return true
                     }
@@ -319,9 +335,9 @@ extension Array where Element: DeepItemProtocol {
     }
     
     public func deepCount(target: CountDeepTarget = .all,
-                          onlyExpanded: Bool) -> Int {
+                          expansion: DeepExpansion) -> Int {
         var count: Int = 0
-        for item in self {
+        loop: for item in self {
             if target == .all {
                 count += 1
             }
@@ -333,11 +349,18 @@ extension Array where Element: DeepItemProtocol {
                 if target == .groups {
                     count += 1
                 }
-                if onlyExpanded {
-                    guard item.isExpanded else { continue }
+                switch expansion {
+                case .all:
+                    break
+                case .open:
+                    guard item.isExpanded else {
+                        continue loop
+                    }
+                case .none:
+                    continue loop
                 }
                 count += item.items.deepCount(target: target,
-                                              onlyExpanded: onlyExpanded)
+                                              expansion: expansion)
             }
         }
         return count
@@ -396,7 +419,7 @@ extension Array where Element: DeepItemProtocol {
         }
         for otherItem in self {
             if otherItem.id == place.itemID {
-                if case .below = place,
+                if case .below(_, let after) = place, !after,
                    case .group = otherItem.representation {
                     return 1
                 }
@@ -420,7 +443,7 @@ extension Array where Element: DeepItemProtocol {
         }
         for otherItem in self {
             if otherItem.id == place.itemID {
-                if case .below = place,
+                if case .below(_, let after) = place, !after,
                    case .group = otherItem.representation {
                     return true
                 }
