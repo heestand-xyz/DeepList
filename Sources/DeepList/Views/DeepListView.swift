@@ -4,6 +4,7 @@ struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
     
     let style: DeepStyle
     @ObservedObject var rootItem: DI
+    let grandparentItem: DI?
     @ObservedObject var parentItem: DI
     let items: [DI]
     let drag: (DI) -> DD
@@ -58,9 +59,8 @@ struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                                                 style: style,
                                                 rootItem: rootItem,
                                                 parentItem: parentItem,
-                                                deepPlace: .above(itemID: id),
-                                                isGroup: nextItem.isGroup,
-                                                isExpanded: nextItem.isExpanded
+                                                item: nextItem,
+                                                deepPlace: .above(itemID: id)
                                             )
                                         }
                                     }
@@ -68,7 +68,7 @@ struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                         }
                     }
                     
-                    if showBottomSection {
+                    if showBottomSection, let grandparentItem: DI {
                         Color.gray.opacity(0.001)
                             .frame(height: style.listPadding)
                             .dropDestination(for: DD.self, action: { drops, location in
@@ -81,10 +81,9 @@ struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                                     DeepSeparatorView(
                                         style: style,
                                         rootItem: rootItem,
-                                        parentItem: parentItem,
-                                        deepPlace: bottomOfGroupDeepPlace,
-                                        isGroup: true,
-                                        isExpanded: true
+                                        parentItem: grandparentItem,
+                                        item: parentItem,
+                                        deepPlace: bottomOfGroupDeepPlace
                                     )
                                 }
                             }

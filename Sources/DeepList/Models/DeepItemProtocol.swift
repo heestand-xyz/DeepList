@@ -434,7 +434,7 @@ extension Array where Element: DeepItemProtocol {
         return nil
     }
     
-    public func isUnderGroup(for place: DeepPlace) -> Bool? {
+    public func isBelowGroup(for place: DeepPlace) -> Bool? {
         if case .top = place {
             return false
         }
@@ -450,7 +450,7 @@ extension Array where Element: DeepItemProtocol {
                 return false
             }
             if otherItem.isGroup {
-                if otherItem.items.isUnderGroup(for: place) == true {
+                if otherItem.items.isBelowGroup(for: place) == true {
                     return true
                 }
             }
@@ -458,7 +458,7 @@ extension Array where Element: DeepItemProtocol {
         return nil
     }
     
-    public func isOverGroup(for place: DeepPlace) -> Bool? {
+    public func isAboveGroup(for place: DeepPlace) -> Bool? {
         if case .top = place {
             return false
         }
@@ -474,7 +474,7 @@ extension Array where Element: DeepItemProtocol {
                 return false
             }
             if otherItem.isGroup {
-                if otherItem.items.isOverGroup(for: place) == true {
+                if otherItem.items.isAboveGroup(for: place) == true {
                     return true
                 }
             }

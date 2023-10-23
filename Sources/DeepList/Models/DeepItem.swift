@@ -38,21 +38,27 @@ extension DeepItem {
 extension DeepItem {
     
     public var isExpanded: Bool {
-        switch self {
-        case .group(_, _, _, let isExpanded):
-            return isExpanded
-        case .element:
-            return false
+        get {
+            switch self {
+            case .group(_, _, _, let isExpanded):
+                return isExpanded
+            case .element:
+                return false
+            }
+        }
+        set {
+            switch self {
+            case .group(let id, let name, let items, _):
+                self = .group(id: id, name: name, items: items, isExpanded: newValue)
+            case .element:
+                break
+            }
         }
     }
     
+    @available(*, deprecated, renamed: "isExpanded")
     public mutating func update(isExpanded: Bool) {
-        switch self {
-        case .group(let id, let name, let items, _):
-            self = .group(id: id, name: name, items: items, isExpanded: isExpanded)
-        case .element:
-            break
-        }
+        self.isExpanded = isExpanded
     }
 }
 

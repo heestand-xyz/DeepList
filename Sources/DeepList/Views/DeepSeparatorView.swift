@@ -12,13 +12,12 @@ struct DeepSeparatorView<DI: DeepItemProtocol>: View {
     let style: DeepStyle
     let rootItem: DI
     let parentItem: DI
+    let item: DI?
     let deepPlace: DeepPlace
-    let isGroup: Bool
-    let isExpanded: Bool
 //    let isNew: Bool
 //    let isRecursive: Bool
     
-    private var isRoot: Bool {
+    private var isAtRoot: Bool {
         rootItem == parentItem
     }
     
@@ -26,12 +25,19 @@ struct DeepSeparatorView<DI: DeepItemProtocol>: View {
         rootItem.items.depth(for: deepPlace) ?? 0
     }
     
-    private var isUnderGroup: Bool {
-        rootItem.items.isUnderGroup(for: deepPlace) ?? false
+    private var isAboveGroup: Bool {
+        rootItem.items.isAboveGroup(for: deepPlace) ?? false
     }
     
-    private var isOverGroup: Bool {
-        rootItem.items.isOverGroup(for: deepPlace) ?? false
+    private var isBelowGroup: Bool {
+        rootItem.items.isBelowGroup(for: deepPlace) ?? false
+    }
+    
+    private var isEmptyGroup: Bool? {
+        if let item: DI, case .group(_, let items) = item.representation {
+            return items.isEmpty
+        }
+        return nil
     }
     
     private var isAfterGroup: Bool {
@@ -42,7 +48,10 @@ struct DeepSeparatorView<DI: DeepItemProtocol>: View {
     }
     
     private var isOneLevelUp: Bool {
-        (!isRoot && isAfterGroup && isGroup && isExpanded) || isOverGroup
+        guard item?.isGroup == true else { return false }
+        return isAfterGroup
+        || isBelowGroup && item?.isExpanded == false
+        || isAboveGroup
     }
     
     var body: some View {

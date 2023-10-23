@@ -52,15 +52,15 @@ public struct DeepRootView<DI: DeepItemProtocol & ObservableObject, DD: DeepDrag
                                     style: style,
                                     rootItem: rootItem,
                                     parentItem: rootItem,
-                                    deepPlace: .top,
-                                    isGroup: false,
-                                    isExpanded: false
+                                    item: nil,
+                                    deepPlace: .top
                                 )
                             }
                         }
                     
                     DeepListView(style: style,
-                                 rootItem: rootItem,
+                                 rootItem: rootItem, 
+                                 grandparentItem: nil,
                                  parentItem: rootItem,
                                  items: rootItem.items,
                                  drag: drag,
@@ -96,9 +96,8 @@ public struct DeepRootView<DI: DeepItemProtocol & ObservableObject, DD: DeepDrag
                                     style: style,
                                     rootItem: rootItem,
                                     parentItem: rootItem,
-                                    deepPlace: .bottom,
-                                    isGroup: false,
-                                    isExpanded: false
+                                    item: nil,
+                                    deepPlace: .bottom
                                 )
                             }
                         }

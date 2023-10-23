@@ -13,6 +13,11 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
     @State private var isTargeted: Bool = false
     @State private var isTargetedAbove: Bool = false
     @State private var isTargetedBelow: Bool = false
+    private var isSomeTargeted: Bool {
+        isTargeted || isTargetedAbove || isTargetedBelow
+    }
+    
+//    @State private var targetTimer: Timer?
     
     var body: some View {
          
@@ -32,7 +37,6 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                             Color.gray.opacity(0.001)
                                 .layoutPriority(-1)
                             content(item)
-//                                .padding(.leading, style.indentationPadding)
                         }
                         .draggable(drag(item)) {
                             
@@ -52,6 +56,7 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                                         
                                         DeepListView(style: style,
                                                      rootItem: rootItem,
+                                                     grandparentItem: parentItem,
                                                      parentItem: item,
                                                      items: items,
                                                      drag: drag,
@@ -67,7 +72,8 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                     if item.isExpanded {
                         
                         DeepListView(style: style,
-                                     rootItem: rootItem,
+                                     rootItem: rootItem, 
+                                     grandparentItem: parentItem,
                                      parentItem: item,
                                      items: items,
                                      drag: drag,
@@ -118,9 +124,8 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                         style: style,
                         rootItem: rootItem,
                         parentItem: parentItem,
-                        deepPlace: .above(itemID: item.id),
-                        isGroup: item.isGroup,
-                        isExpanded: item.isExpanded
+                        item: item,
+                        deepPlace: .above(itemID: item.id)
                     )
                     Spacer()
                 } else if isTargetedBelow {
@@ -129,30 +134,42 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                         style: style,
                         rootItem: rootItem,
                         parentItem: parentItem,
-                        deepPlace: .below(itemID: item.id, after: item.isGroup && !item.isExpanded),
-                        isGroup: item.isGroup,
-                        isExpanded: item.isExpanded
+                        item: item,
+                        deepPlace: .below(itemID: item.id, after: item.isGroup && !item.isExpanded)
                     )
                 }
             }
             
-            if isTargeted || isTargetedAbove || isTargetedBelow {
+            if isSomeTargeted {
                 
                 VStack(spacing: 0.0) {
                     Color.gray.opacity(0.001)
                         .dropDestination(for: DD.self, action: { drops, location in
                             drop(drops, .above(itemID: item.id), location)
                         }) { isTargeted in
-                            self.isTargetedAbove = isTargeted
+                            isTargetedAbove = isTargeted
                         }
                     Color.gray.opacity(0.001)
                         .dropDestination(for: DD.self, action: { drops, location in
                             drop(drops, .below(itemID: item.id, after: item.isGroup && !item.isExpanded), location)
                         }) { isTargeted in
-                            self.isTargetedBelow = isTargeted
+                            isTargetedBelow = isTargeted
+//                            didTargetBelow(isTargeted)
                         }
                 }
             }
         }
     }
+    
+//    private func didTargetBelow(_ isTargeted: Bool) {
+//        targetTimer?.invalidate()
+//        targetTimer = nil
+//        guard isTargeted, item.isGroup, !item.isExpanded else { return }
+//        targetTimer = .scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
+//            var item: DI = item
+//            withAnimation {
+//                item.isExpanded = true
+//            }
+//        }
+//    }
 }
