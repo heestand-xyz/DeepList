@@ -12,7 +12,7 @@ public struct DeepRootView<DI: DeepItemProtocol & ObservableObject, DD: DeepDrag
                 rootItem: DI,
                 drag: @escaping (DI) -> DD,
                 drop: @escaping ([DD], DeepPlace, CGPoint) -> Bool,
-                content: @escaping (DI) -> Content) {
+                @ViewBuilder content: @escaping (DI) -> Content) {
         precondition(rootItem.isGroup)
         self.style = style
         self.rootItem = rootItem
