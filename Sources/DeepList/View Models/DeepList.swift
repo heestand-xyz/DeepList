@@ -14,11 +14,15 @@ public final class DeepList: ObservableObject {
     public init() {}
     
     public func drag(itemID: UUID) {
-        draggingItemID = itemID
+        DispatchQueue.main.async {
+            self.draggingItemID = itemID
+        }
     }
     
     public func drop() {
-        draggingItemID = nil
+        DispatchQueue.main.async {
+            self.draggingItemID = nil
+        }
     }
     
     func isNew<DI: DeepItemProtocol>(rootItem: DI, at place: DeepPlace) -> Bool? {
