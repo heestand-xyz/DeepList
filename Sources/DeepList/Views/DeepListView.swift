@@ -2,11 +2,12 @@ import SwiftUI
 
 struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, Content: View>: View {
     
-    let style: DeepStyle
+    @ObservedObject var deepList: DeepList
     @ObservedObject var rootItem: DI
     let grandparentItem: DI?
     @ObservedObject var parentItem: DI
     let items: [DI]
+    let style: DeepStyle
     let drag: (DI) -> DD
     let drop: ([DD], DeepPlace, CGPoint) -> Bool
     let content: (DI) -> Content
@@ -32,10 +33,11 @@ struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                     
                     ForEach(items) { item in
                         
-                        DeepItemView(style: style,
+                        DeepItemView(deepList: deepList,
                                      rootItem: rootItem,
                                      parentItem: parentItem,
                                      item: item,
+                                     style: style,
                                      drag: drag,
                                      drop: drop,
                                      content: content)
@@ -48,7 +50,8 @@ struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                                 Color.gray.opacity(0.001)
                                     .frame(height: style.listPadding)
                                     .dropDestination(for: DD.self, action: { drops, location in
-                                        drop(drops, .above(itemID: nextItem.id), location)
+                                        deepList.drop()
+                                        return drop(drops, .above(itemID: nextItem.id), location)
                                     }) { isTargeted in
                                         middleItemIDTargeted = isTargeted ? nextItem.id : nil
                                     }
@@ -56,11 +59,12 @@ struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                                         if let id: UUID = middleItemIDTargeted,
                                            id == nextItem.id {
                                             DeepSeparatorView(
-                                                style: style,
+                                                deepList: deepList,
                                                 rootItem: rootItem,
                                                 parentItem: parentItem,
                                                 item: nextItem,
-                                                deepPlace: .above(itemID: id)
+                                                deepPlace: .above(itemID: id),
+                                                style: style
                                             )
                                         }
                                     }
@@ -72,18 +76,20 @@ struct DeepListView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                         Color.gray.opacity(0.001)
                             .frame(height: style.listPadding)
                             .dropDestination(for: DD.self, action: { drops, location in
-                                drop(drops, bottomOfGroupDeepPlace, location)
+                                deepList.drop()
+                                return drop(drops, bottomOfGroupDeepPlace, location)
                             }) { isTargeted in
                                 self.isTargeted = isTargeted
                             }
                             .overlay(alignment: .bottom) {
                                 if isTargeted {
                                     DeepSeparatorView(
-                                        style: style,
+                                        deepList: deepList,
                                         rootItem: rootItem,
                                         parentItem: grandparentItem,
                                         item: parentItem,
-                                        deepPlace: bottomOfGroupDeepPlace
+                                        deepPlace: bottomOfGroupDeepPlace,
+                                        style: style
                                     )
                                 }
                             }

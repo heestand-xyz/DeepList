@@ -2,20 +2,23 @@ import SwiftUI
 
 public struct DeepRootView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, Content: View>: View {
     
-    let style: DeepStyle
+    @ObservedObject var deepList: DeepList
     @ObservedObject var rootItem: DI
+    let style: DeepStyle
     let drag: (DI) -> DD
     let drop: ([DD], DeepPlace, CGPoint) -> Bool
     let content: (DI) -> Content
     
-    public init(style: DeepStyle = .default,
+    public init(deepList: DeepList,
                 rootItem: DI,
+                style: DeepStyle = .default,
                 drag: @escaping (DI) -> DD,
                 drop: @escaping ([DD], DeepPlace, CGPoint) -> Bool,
                 @ViewBuilder content: @escaping (DI) -> Content) {
         precondition(rootItem.isGroup)
-        self.style = style
+        self.deepList = deepList
         self.rootItem = rootItem
+        self.style = style
         self.drag = drag
         self.drop = drop
         self.content = content
@@ -42,27 +45,30 @@ public struct DeepRootView<DI: DeepItemProtocol & ObservableObject, DD: DeepDrag
                     Color.gray.opacity(0.001)
                         .frame(height: style.scrollTopEdgeInset)
                         .dropDestination(for: DD.self) { drops, location in
-                            drop(drops, .top, location)
+                            deepList.drop()
+                            return drop(drops, .top, location)
                         } isTargeted: { isTarget in
                             isTargetTop = isTarget
                         }
                         .overlay(alignment: .bottom) {
                             if isTargetTop {
                                 DeepSeparatorView(
-                                    style: style,
+                                    deepList: deepList,
                                     rootItem: rootItem,
                                     parentItem: rootItem,
                                     item: nil,
-                                    deepPlace: .top
+                                    deepPlace: .top,
+                                    style: style
                                 )
                             }
                         }
                     
-                    DeepListView(style: style,
-                                 rootItem: rootItem, 
+                    DeepListView(deepList: deepList,
+                                 rootItem: rootItem,
                                  grandparentItem: nil,
                                  parentItem: rootItem,
                                  items: rootItem.items,
+                                 style: style,
                                  drag: drag,
                                  drop: drop,
                                  content: content)
@@ -86,18 +92,20 @@ public struct DeepRootView<DI: DeepItemProtocol & ObservableObject, DD: DeepDrag
                     Color.gray.opacity(0.001)
                         .frame(height: remainingHeight)
                         .dropDestination(for: DD.self) { drops, location in
-                            drop(drops, .bottom, location)
+                            deepList.drop()
+                            return drop(drops, .bottom, location)
                         } isTargeted: { isTarget in
                             isTargetBottom = isTarget
                         }
                         .overlay(alignment: .top) {
                             if isTargetBottom {
                                 DeepSeparatorView(
-                                    style: style,
+                                    deepList: deepList,
                                     rootItem: rootItem,
                                     parentItem: rootItem,
                                     item: nil,
-                                    deepPlace: .bottom
+                                    deepPlace: .bottom,
+                                    style: style
                                 )
                             }
                         }

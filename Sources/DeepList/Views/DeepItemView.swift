@@ -2,10 +2,11 @@ import SwiftUI
 
 struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, Content: View>: View {
     
-    let style: DeepStyle
+    @ObservedObject var deepList: DeepList
     @ObservedObject var rootItem: DI
     @ObservedObject var parentItem: DI
     @ObservedObject var item: DI
+    let style: DeepStyle
     let drag: (DI) -> DD
     let drop: ([DD], DeepPlace, CGPoint) -> Bool
     let content: (DI) -> Content
@@ -38,7 +39,10 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                                 .layoutPriority(-1)
                             content(item)
                         }
-                        .draggable(drag(item)) {
+                        .draggable({ () -> DD in
+                            deepList.drag(itemID: item.id)
+                            return drag(item)
+                        }()) {
                             
                             ZStack {
                                 
@@ -54,11 +58,12 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                                     
                                     if item.isExpanded {
                                         
-                                        DeepListView(style: style,
+                                        DeepListView(deepList: deepList,
                                                      rootItem: rootItem,
                                                      grandparentItem: parentItem,
                                                      parentItem: item,
                                                      items: items,
+                                                     style: style,
                                                      drag: drag,
                                                      drop: drop,
                                                      content: content)
@@ -71,11 +76,12 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                     
                     if item.isExpanded {
                         
-                        DeepListView(style: style,
-                                     rootItem: rootItem, 
+                        DeepListView(deepList: deepList,
+                                     rootItem: rootItem,
                                      grandparentItem: parentItem,
                                      parentItem: item,
                                      items: items,
+                                     style: style,
                                      drag: drag,
                                      drop: drop,
                                      content: content)
@@ -92,7 +98,10 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                         .layoutPriority(-1)
                     content(item)
                 }
-                .draggable(drag(item)) {
+                .draggable({ () -> DD in
+                    deepList.drag(itemID: item.id)
+                    return drag(item)
+                }()) {
                     
                     ZStack {
                         
@@ -121,21 +130,23 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
             VStack {
                 if isTargetedAbove {
                     DeepSeparatorView(
-                        style: style,
+                        deepList: deepList,
                         rootItem: rootItem,
                         parentItem: parentItem,
                         item: item,
-                        deepPlace: .above(itemID: item.id)
+                        deepPlace: .above(itemID: item.id),
+                        style: style
                     )
                     Spacer()
                 } else if isTargetedBelow {
                     Spacer()
                     DeepSeparatorView(
-                        style: style,
+                        deepList: deepList,
                         rootItem: rootItem,
                         parentItem: parentItem,
                         item: item,
-                        deepPlace: .below(itemID: item.id, after: item.isGroup && !item.isExpanded)
+                        deepPlace: .below(itemID: item.id, after: item.isGroup && !item.isExpanded),
+                        style: style
                     )
                 }
             }
@@ -145,13 +156,15 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                 VStack(spacing: 0.0) {
                     Color.gray.opacity(0.001)
                         .dropDestination(for: DD.self, action: { drops, location in
-                            drop(drops, .above(itemID: item.id), location)
+                            deepList.drop()
+                            return drop(drops, .above(itemID: item.id), location)
                         }) { isTargeted in
                             isTargetedAbove = isTargeted
                         }
                     Color.gray.opacity(0.001)
                         .dropDestination(for: DD.self, action: { drops, location in
-                            drop(drops, .below(itemID: item.id, after: item.isGroup && !item.isExpanded), location)
+                            deepList.drop()
+                            return drop(drops, .below(itemID: item.id, after: item.isGroup && !item.isExpanded), location)
                         }) { isTargeted in
                             isTargetedBelow = isTargeted
 //                            didTargetBelow(isTargeted)

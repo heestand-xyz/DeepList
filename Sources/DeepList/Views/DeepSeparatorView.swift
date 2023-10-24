@@ -9,13 +9,20 @@ import SwiftUI
 
 struct DeepSeparatorView<DI: DeepItemProtocol>: View {
     
-    let style: DeepStyle
+    @ObservedObject var deepList: DeepList
     let rootItem: DI
     let parentItem: DI
     let item: DI?
     let deepPlace: DeepPlace
-//    let isNew: Bool
-//    let isRecursive: Bool
+    let style: DeepStyle
+    
+    private var isNew: Bool? {
+        deepList.isNew(rootItem: rootItem, at: deepPlace)
+    }
+    
+    private var isRecursive: Bool? {
+        deepList.isRecursive(rootItem: rootItem, at: deepPlace)
+    }
     
     private var isAtRoot: Bool {
         rootItem == parentItem
@@ -65,8 +72,7 @@ struct DeepSeparatorView<DI: DeepItemProtocol>: View {
                     style.separatorHeight / 2
                 }
             }())
-            .foregroundColor(.accentColor)
-//            .foregroundColor(isRecursive ? .red : isNew ? .accentColor : .primary.opacity(0.25))
+            .foregroundColor(isRecursive == true ? .red : isNew != false ? .accentColor : .primary.opacity(0.25))
             .padding(.horizontal, isOneLevelUp ? -style.indentationPadding : 0.0)
             .allowsHitTesting(false)
     }
