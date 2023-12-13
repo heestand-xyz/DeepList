@@ -9,7 +9,13 @@ import SwiftUI
 
 public struct DeepStyle {
     
+    public enum Indentation {
+        case horizontal
+        case leading
+    }
+
     public var rowHeight: CGFloat
+    public var indentation: Indentation
     public var indentationPadding: CGFloat
     public var separatorHeight: CGFloat
     public var scrollTopEdgeInset: CGFloat
@@ -26,6 +32,7 @@ public struct DeepStyle {
             return 40
 #endif
         }(),
+        indentation: Indentation = .leading,
         indentationPadding: CGFloat = 16,
         separatorHeight: CGFloat = 3,
         scrollTopEdgeInset: CGFloat = 0.0,
@@ -35,6 +42,7 @@ public struct DeepStyle {
         backgroundColor: Color = .clear
     ) {
         self.rowHeight = rowHeight
+        self.indentation = indentation
         self.indentationPadding = indentationPadding
         self.separatorHeight = separatorHeight
         self.scrollTopEdgeInset = scrollTopEdgeInset

@@ -51,7 +51,7 @@ struct DeepObservableItemView<DI: DeepItemProtocol & Observable, DD: DeepDraggab
                                 VStack(alignment: .leading, spacing: 0.0) {
                                     
                                     content(item)
-                                        .padding(.leading, style.indentationPadding)
+                                        .padding(.leading, style.indentation == .horizontal ? style.indentationPadding : 0.0)
                                         .frame(height: style.rowHeight)
                                     
                                     if item.isExpanded {
@@ -67,6 +67,7 @@ struct DeepObservableItemView<DI: DeepItemProtocol & Observable, DD: DeepDraggab
                                             drop: drop,
                                             content: content
                                         )
+                                        .padding(.leading, style.indentation == .leading ? style.indentationPadding : 0.0)
                                     }
                                 }
                             }
@@ -87,10 +88,11 @@ struct DeepObservableItemView<DI: DeepItemProtocol & Observable, DD: DeepDraggab
                             drop: drop,
                             content: content
                         )
+                        .padding(.leading, style.indentation == .leading ? style.indentationPadding : 0.0)
                     }
                 }
             }
-            .padding(.horizontal, style.indentationPadding)
+            .padding(.horizontal, style.indentation == .horizontal ? style.indentationPadding : 0.0)
             
         case .element:
             
