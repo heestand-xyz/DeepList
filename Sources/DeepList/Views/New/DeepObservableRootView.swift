@@ -1,5 +1,6 @@
 import SwiftUI
 
+@available(iOS 17.0, *)
 public struct DeepObservableRootView<DI: DeepItemProtocol & Observable, DD: DeepDraggable, Content: View>: View {
     
     @ObservedObject var deepList: DeepList

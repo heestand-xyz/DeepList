@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@available(iOS 17.0, *)
 struct DeepObservableSeparatorView<DI: DeepItemProtocol>: View {
     
     @ObservedObject var deepList: DeepList
