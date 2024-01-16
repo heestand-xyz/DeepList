@@ -73,9 +73,10 @@ struct DeepObservableSeparatorView<DI: DeepItemProtocol>: View {
                     style.separatorHeight / 2
                 }
             }())
-            .foregroundColor(isRecursive == true ? .red : isNew != false ? .accentColor : .primary.opacity(0.25))
+            .foregroundColor(isRecursive == true ? .red : isNew != false ? style.separatorColor : .primary.opacity(0.25))
             .padding(.horizontal, style.indentation == .horizontal && isOneLevelUp ? -style.indentationPadding : 0.0)
-            .padding(.leading, style.indentation == .leading && isBelowGroup ? style.indentationPadding : 0.0)
+            .padding(.leading, style.indentation.isLeading && isBelowGroup ? style.indentationPadding : 0.0)
+            .offset(z: style.indentation.isDepth && isBelowGroup ? style.indentationPadding : 0.0)
             .allowsHitTesting(false)
     }
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 @available(iOS 17.0, *)
-struct DeepObservableListView<DI: DeepItemProtocol & Observable, DD: DeepDraggable, Content: View>: View {
+struct DeepObservableListView<DI: DeepItemProtocol & Observable, DD: DeepDraggable, Content: View, DragContent: View>: View {
     
     @ObservedObject var deepList: DeepList
     let rootItem: DI
@@ -9,9 +9,11 @@ struct DeepObservableListView<DI: DeepItemProtocol & Observable, DD: DeepDraggab
     let parentItem: DI
     let items: [DI]
     let style: DeepStyle
+    let isDragPreview: Bool
     let drag: (DI) -> DD
     let drop: ([DD], DeepPlace, CGPoint) -> Bool
     let content: (DI) -> Content
+    let dragContent: (DI) -> DragContent
     
     @State private var isTargeted: Bool = false
     @State private var middleItemIDTargeted: UUID?
@@ -40,9 +42,11 @@ struct DeepObservableListView<DI: DeepItemProtocol & Observable, DD: DeepDraggab
                             parentItem: parentItem,
                             item: item,
                             style: style,
+                            isDragPreview: isDragPreview,
                             drag: drag,
                             drop: drop,
-                            content: content
+                            content: content,
+                            dragContent: dragContent
                         )
                         
                         let index = items.firstIndex(of: item) ?? 0

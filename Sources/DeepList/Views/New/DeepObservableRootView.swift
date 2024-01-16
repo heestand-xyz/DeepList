@@ -1,7 +1,7 @@
 import SwiftUI
 
 @available(iOS 17.0, *)
-public struct DeepObservableRootView<DI: DeepItemProtocol & Observable, DD: DeepDraggable, Content: View>: View {
+public struct DeepObservableRootView<DI: DeepItemProtocol & Observable, DD: DeepDraggable, Content: View, DragContent: View>: View {
     
     @ObservedObject var deepList: DeepList
     let rootItem: DI
@@ -9,13 +9,15 @@ public struct DeepObservableRootView<DI: DeepItemProtocol & Observable, DD: Deep
     let drag: (DI) -> DD
     let drop: ([DD], DeepPlace, CGPoint) -> Bool
     let content: (DI) -> Content
+    let dragContent: (DI) -> DragContent
     
     public init(deepList: DeepList,
                 rootItem: DI,
                 style: DeepStyle = .default,
                 drag: @escaping (DI) -> DD,
                 drop: @escaping ([DD], DeepPlace, CGPoint) -> Bool,
-                @ViewBuilder content: @escaping (DI) -> Content) {
+                @ViewBuilder content: @escaping (DI) -> Content,
+                @ViewBuilder dragContent: @escaping (DI) -> DragContent) {
         precondition(rootItem.isGroup)
         self.deepList = deepList
         self.rootItem = rootItem
@@ -23,6 +25,7 @@ public struct DeepObservableRootView<DI: DeepItemProtocol & Observable, DD: Deep
         self.drag = drag
         self.drop = drop
         self.content = content
+        self.dragContent = dragContent
     }
     
     @State private var isTargetTop: Bool = false
@@ -71,9 +74,11 @@ public struct DeepObservableRootView<DI: DeepItemProtocol & Observable, DD: Deep
                         parentItem: rootItem,
                         items: rootItem.items,
                         style: style,
+                        isDragPreview: false,
                         drag: drag,
                         drop: drop,
-                        content: content
+                        content: content,
+                        dragContent: dragContent
                     )
                     .background {
                         GeometryReader { geometry in

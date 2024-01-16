@@ -1,16 +1,18 @@
 import SwiftUI
 
 @available(iOS 17.0, *)
-struct DeepObservableItemView<DI: DeepItemProtocol & Observable, DD: DeepDraggable, Content: View>: View {
+struct DeepObservableItemView<DI: DeepItemProtocol & Observable, DD: DeepDraggable, Content: View, DragContent: View>: View {
     
     @ObservedObject var deepList: DeepList
     let rootItem: DI
     let parentItem: DI
     let item: DI
     let style: DeepStyle
+    let isDragPreview: Bool
     let drag: (DI) -> DD
     let drop: ([DD], DeepPlace, CGPoint) -> Bool
     let content: (DI) -> Content
+    let dragContent: (DI) -> DragContent
     
     @State private var isTargeted: Bool = false
     @State private var isTargetedAbove: Bool = false
@@ -36,7 +38,11 @@ struct DeepObservableItemView<DI: DeepItemProtocol & Observable, DD: DeepDraggab
                         ZStack {
                             Color.gray.opacity(0.001)
                                 .layoutPriority(-1)
-                            content(item)
+                            if isDragPreview {
+                                dragContent(item)
+                            } else {
+                                content(item)
+                            }
                         }
                         .draggable({ () -> DD in
                             deepList.drag(itemID: item.id)
@@ -51,7 +57,7 @@ struct DeepObservableItemView<DI: DeepItemProtocol & Observable, DD: DeepDraggab
                                 
                                 VStack(alignment: .leading, spacing: 0.0) {
                                     
-                                    content(item)
+                                    dragContent(item)
                                         .padding(.leading, style.indentation == .horizontal ? style.indentationPadding : 0.0)
                                         .frame(height: style.rowHeight)
                                     
@@ -64,11 +70,14 @@ struct DeepObservableItemView<DI: DeepItemProtocol & Observable, DD: DeepDraggab
                                             parentItem: item,
                                             items: items,
                                             style: style,
+                                            isDragPreview: true,
                                             drag: drag,
                                             drop: drop,
-                                            content: content
+                                            content: content,
+                                            dragContent: dragContent
                                         )
-                                        .padding(.leading, style.indentation == .leading ? style.indentationPadding : 0.0)
+                                        .padding(.leading, style.indentation.isLeading ? style.indentationPadding : 0.0)
+                                        .offset(z: style.indentation.isDepth ? style.indentationPadding : 0.0)
                                     }
                                 }
                             }
@@ -85,11 +94,14 @@ struct DeepObservableItemView<DI: DeepItemProtocol & Observable, DD: DeepDraggab
                             parentItem: item,
                             items: items,
                             style: style,
+                            isDragPreview: isDragPreview,
                             drag: drag,
                             drop: drop,
-                            content: content
+                            content: content,
+                            dragContent: dragContent
                         )
-                        .padding(.leading, style.indentation == .leading ? style.indentationPadding : 0.0)
+                        .padding(.leading, style.indentation.isLeading ? style.indentationPadding : 0.0)
+                        .offset(z: style.indentation.isDepth ? style.indentationPadding : 0.0)
                     }
                 }
             }
@@ -101,7 +113,11 @@ struct DeepObservableItemView<DI: DeepItemProtocol & Observable, DD: DeepDraggab
                 ZStack {
                     Color.gray.opacity(0.001)
                         .layoutPriority(-1)
-                    content(item)
+                    if isDragPreview {
+                        dragContent(item)
+                    } else {
+                        content(item)
+                    }
                 }
                 .draggable({ () -> DD in
                     deepList.drag(itemID: item.id)
@@ -114,7 +130,7 @@ struct DeepObservableItemView<DI: DeepItemProtocol & Observable, DD: DeepDraggab
                             .foregroundColor(style.backgroundColor)
                             .layoutPriority(-1)
                         
-                        content(item)
+                        dragContent(item)
                             .frame(height: style.rowHeight)
                     }
                 }

@@ -12,6 +12,24 @@ public struct DeepStyle {
     public enum Indentation {
         case horizontal
         case leading
+        case depth
+        case leadingDepth
+        var isLeading: Bool {
+            switch self {
+            case .leading, .leadingDepth:
+                true
+            default:
+                false
+            }
+        }
+        var isDepth: Bool {
+            switch self {
+            case .depth, .leadingDepth:
+                true
+            default:
+                false
+            }
+        }
     }
 
     public var rowHeight: CGFloat
@@ -22,6 +40,7 @@ public struct DeepStyle {
     public var scrollBottomEdgeInset: CGFloat
     public var listPadding: CGFloat
     public var listCornerRadius: CGFloat
+    public var separatorColor: Color
     public var backgroundColor: Color
     
     public init(
@@ -39,6 +58,7 @@ public struct DeepStyle {
         scrollBottomEdgeInset: CGFloat = 0.0,
         listPadding: CGFloat = 0.0,
         listCornerRadius: CGFloat = 0.0,
+        separatorColor: Color = .accentColor,
         backgroundColor: Color = .clear
     ) {
         self.rowHeight = rowHeight
@@ -49,6 +69,7 @@ public struct DeepStyle {
         self.scrollBottomEdgeInset = scrollBottomEdgeInset
         self.listPadding = listPadding
         self.listCornerRadius = listCornerRadius
+        self.separatorColor = separatorColor
         self.backgroundColor = backgroundColor
     }
     
