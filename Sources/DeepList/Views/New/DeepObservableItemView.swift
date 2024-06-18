@@ -1,6 +1,6 @@
 import SwiftUI
 
-@available(iOS 17.0, *)
+@available(iOS 17.0, macOS 14.0, *)
 struct DeepObservableItemView<DI: DeepItemProtocol & Observable, DD: DeepDraggable, Content: View, DragContent: View>: View {
     
     @ObservedObject var deepList: DeepList
@@ -77,7 +77,9 @@ struct DeepObservableItemView<DI: DeepItemProtocol & Observable, DD: DeepDraggab
                                             dragContent: dragContent
                                         )
                                         .padding(.leading, style.indentation.isLeading ? style.indentationPadding : 0.0)
+#if os(visionOS)
                                         .offset(z: style.indentation.isDepth ? style.indentationPadding : 0.0)
+#endif
                                     }
                                 }
                             }
@@ -101,7 +103,9 @@ struct DeepObservableItemView<DI: DeepItemProtocol & Observable, DD: DeepDraggab
                             dragContent: dragContent
                         )
                         .padding(.leading, style.indentation.isLeading ? style.indentationPadding : 0.0)
+#if os(visionOS)
                         .offset(z: style.indentation.isDepth ? style.indentationPadding : 0.0)
+#endif
                     }
                 }
             }

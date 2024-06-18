@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-@available(iOS 17.0, *)
+@available(iOS 17.0, macOS 14.0, *)
 struct DeepObservableSeparatorView<DI: DeepItemProtocol>: View {
     
     @ObservedObject var deepList: DeepList
@@ -76,7 +76,9 @@ struct DeepObservableSeparatorView<DI: DeepItemProtocol>: View {
             .foregroundColor(isRecursive == true ? .red : isNew != false ? style.separatorColor : .primary.opacity(0.25))
             .padding(.horizontal, style.indentation == .horizontal && isOneLevelUp ? -style.indentationPadding : 0.0)
             .padding(.leading, style.indentation.isLeading && isBelowGroup ? style.indentationPadding : 0.0)
+#if os(visionOS)
             .offset(z: style.indentation.isDepth && isBelowGroup ? style.indentationPadding : 0.0)
+#endif
             .allowsHitTesting(false)
     }
 }
