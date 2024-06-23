@@ -262,6 +262,16 @@ extension DeepItemProtocol {
         }
     }
     
+    public static func listUpdate(items: inout [Self], callback: (Self) -> (Self)) {
+        for (index, item) in items.enumerated() {
+            var newItem = callback(item)
+            if newItem.isGroup, newItem.isExpanded {
+                listUpdate(items: &newItem.items, callback: callback)
+            }
+            items[index] = newItem
+        }
+    }
+    
     @available(*, deprecated, renamed: "deepIndex(from:)")
     public func index(from items: [Self]) -> Int {
         deepIndex(from: items, expansion: .open)
