@@ -253,23 +253,51 @@ extension Array where Element: DeepItemProtocol {
 
 extension DeepItemProtocol {
     
-    public static func list(items: [Self], callback: (Self) -> ()) {
+    public static func list(
+        items: [Self],
+        expandedOnly: Bool,
+        callback: (Self) -> ()
+    ) {
         for item in items {
             callback(item)
-            if item.isGroup, item.isExpanded {
-                list(items: item.items, callback: callback)
+            if item.isGroup, expandedOnly ? item.isExpanded : true {
+                list(items: item.items, expandedOnly: expandedOnly, callback: callback)
             }
         }
     }
     
-    public static func listUpdate(items: inout [Self], callback: (Self) -> (Self)) {
+    public static func listUpdate(
+        items: inout [Self],
+        callback: (Self) -> (Self)
+    ) {
         for (index, item) in items.enumerated() {
             var newItem = callback(item)
-            if newItem.isGroup, newItem.isExpanded {
+            if newItem.isGroup {
                 listUpdate(items: &newItem.items, callback: callback)
             }
             items[index] = newItem
         }
+    }
+    
+    @discardableResult
+    public static func update(
+        item: Self,
+        in items: inout [Self]
+    ) -> Bool {
+        for (index, currentItem) in items.enumerated() {
+            if currentItem.id == item.id {
+                items[index] = item
+                return true
+            }
+            if currentItem.isGroup {
+                var currentItems: [Self] = currentItem.items
+                if update(item: item, in: &currentItems) {
+                    items[index].update(items: currentItems)
+                    return true
+                }
+            }
+        }
+        return false
     }
     
     @available(*, deprecated, renamed: "deepIndex(from:)")
