@@ -77,7 +77,7 @@ extension DeepItemProtocol {
         }
         
         guard let placeItemID: UUID = place.itemID,
-              let placeItem: Self = items.firstDeep(id: placeItemID) else {
+              let placeItem: Self = items.firstDeep(id: placeItemID, expandedOnly: true) else {
             return nil
         }
         
@@ -197,7 +197,7 @@ extension Array where Element: DeepItemProtocol {
     
     @discardableResult
     public mutating func remove(id: UUID) -> Bool {
-        guard let item = firstDeep(id: id) else { return false }
+        guard let item = firstDeep(id: id, expandedOnly: false) else { return false }
         switch item.representation {
         case .group:
             return removeGroup(id: id)
@@ -358,13 +358,23 @@ public struct CountDeepTarget: OptionSet {
 
 extension Array where Element: DeepItemProtocol {
     
-    public func firstDeep(id: UUID) -> Element? {
+    public func contains(
+        id: UUID,
+        expandedOnly: Bool = false
+    ) -> Bool {
+        firstDeep(id: id, expandedOnly: expandedOnly) != nil
+    }
+    
+    public func firstDeep(
+        id: UUID,
+        expandedOnly: Bool
+    ) -> Element? {
         for item in self {
             if item.id == id {
                 return item
             }
-            if item.isGroup, item.isExpanded {
-                if let item = item.items.firstDeep(id: id) {
+            if item.isGroup, expandedOnly ? item.isExpanded : true {
+                if let item = item.items.firstDeep(id: id, expandedOnly: expandedOnly) {
                     return item
                 }
             }
@@ -372,8 +382,10 @@ extension Array where Element: DeepItemProtocol {
         return nil
     }
     
-    public func deepCount(target: CountDeepTarget = .all,
-                          expansion: DeepExpansion) -> Int {
+    public func deepCount(
+        target: CountDeepTarget = .all,
+        expansion: DeepExpansion
+    ) -> Int {
         var count: Int = 0
         loop: for item in self {
             if target == .all {
@@ -518,5 +530,30 @@ extension Array where Element: DeepItemProtocol {
             }
         }
         return nil
+    }
+    
+    public func deepPlace(for targetItem: Element) -> DeepPlace? {
+        func place(for items: [Element], in groupItem: Element?) -> DeepPlace? {
+            var lastItem: Element?
+            for item in items {
+                if targetItem == item {
+                    if let lastItem: Element {
+                        return .below(itemID: lastItem.id, after: true)
+                    } else if let groupItem: Element {
+                        return .below(itemID: groupItem.id, after: false)
+                    } else {
+                        return .top
+                    }
+                }
+                if item.isGroup {
+                    if let place = place(for: item.items, in: item) {
+                        return place
+                    }
+                }
+                lastItem = item
+            }
+            return nil
+        }
+        return place(for: self, in: nil)
     }
 }

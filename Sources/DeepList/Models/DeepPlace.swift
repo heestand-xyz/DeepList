@@ -1,10 +1,10 @@
 import Foundation
 
-public enum DeepPlace {
+public enum DeepPlace: Equatable {
    
     case top
     case above(itemID: UUID)
-    /// `after` is only used for groups
+    /// `after` is only used for groups, it's essentially `!inside`.
     case below(itemID: UUID, after: Bool)
     case bottom
     

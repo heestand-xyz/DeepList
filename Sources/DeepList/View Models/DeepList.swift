@@ -27,13 +27,13 @@ public final class DeepList: ObservableObject {
     
     func isNew<DI: DeepItemProtocol>(rootItem: DI, at place: DeepPlace) -> Bool? {
         guard let id: UUID = draggingItemID else { return nil }
-        guard let item: DI = rootItem.items.firstDeep(id: id) else { return nil }
+        guard let item: DI = rootItem.items.firstDeep(id: id, expandedOnly: true) else { return nil }
         return item.isNew(place: place, in: rootItem.items)
     }
     
     func isRecursive<DI: DeepItemProtocol>(rootItem: DI, at place: DeepPlace) -> Bool? {
         guard let id: UUID = draggingItemID else { return nil }
-        guard let item: DI = rootItem.items.firstDeep(id: id) else { return nil }
+        guard let item: DI = rootItem.items.firstDeep(id: id, expandedOnly: true) else { return nil }
         return item.isRecursive(place: place)
     }
 }
