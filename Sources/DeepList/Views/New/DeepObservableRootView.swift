@@ -6,22 +6,27 @@ public struct DeepObservableRootView<DI: DeepItemProtocol & Observable, DD: Deep
     @ObservedObject var deepList: DeepList
     let rootItem: DI
     let style: DeepStyle
+    let didTapBackground: () -> ()
     let drag: (DI) -> DD
     let drop: ([DD], DeepPlace, CGPoint) -> Bool
     let content: (DI) -> Content
     let dragContent: (DI) -> DragContent
     
-    public init(deepList: DeepList,
-                rootItem: DI,
-                style: DeepStyle = .default,
-                drag: @escaping (DI) -> DD,
-                drop: @escaping ([DD], DeepPlace, CGPoint) -> Bool,
-                @ViewBuilder content: @escaping (DI) -> Content,
-                @ViewBuilder dragContent: @escaping (DI) -> DragContent) {
+    public init(
+        deepList: DeepList,
+        rootItem: DI,
+        style: DeepStyle = .default,
+        didTapBackground: @escaping () -> () = {},
+        drag: @escaping (DI) -> DD,
+        drop: @escaping ([DD], DeepPlace, CGPoint) -> Bool,
+        @ViewBuilder content: @escaping (DI) -> Content,
+        @ViewBuilder dragContent: @escaping (DI) -> DragContent
+    ) {
         precondition(rootItem.isGroup)
         self.deepList = deepList
         self.rootItem = rootItem
         self.style = style
+        self.didTapBackground = didTapBackground
         self.drag = drag
         self.drop = drop
         self.content = content
@@ -104,6 +109,9 @@ public struct DeepObservableRootView<DI: DeepItemProtocol & Observable, DD: Deep
                             return drop(drops, .bottom, location)
                         } isTargeted: { isTarget in
                             isTargetBottom = isTarget
+                        }
+                        .onTapGesture {
+                            didTapBackground()
                         }
                         .overlay(alignment: .top) {
                             if isTargetBottom {
