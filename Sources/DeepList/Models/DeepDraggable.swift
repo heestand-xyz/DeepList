@@ -8,7 +8,7 @@
 import UniformTypeIdentifiers
 import CoreTransferable
 
-public protocol DeepDraggable: Codable, Transferable {
+public protocol DeepDraggable: Codable, Transferable, Sendable {
     var itemID: UUID { get }
     static var contentType: UTType { get }
 }
