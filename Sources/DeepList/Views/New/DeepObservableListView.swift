@@ -25,10 +25,14 @@ struct DeepObservableListView<DI: DeepItemProtocol & Observable, DD: DeepDraggab
     private var bottomOfGroupDeepPlace: DeepPlace {
         .below(itemID: parentItem.id, after: true)
     }
+
+    private var bottomSectionHeight: CGFloat {
+        items.isEmpty ? style.rowHeight / 2 : style.listPadding
+    }
     
     var body: some View {
         
-        if !items.isEmpty {
+        if !items.isEmpty || grandparentItem != nil {
 
             ZStack {
 
@@ -81,7 +85,7 @@ struct DeepObservableListView<DI: DeepItemProtocol & Observable, DD: DeepDraggab
                     
                     if showBottomSection, let grandparentItem: DI {
                         Color.gray.opacity(0.001)
-                            .frame(height: style.listPadding)
+                            .frame(height: bottomSectionHeight)
                             .dropDestination(for: DD.self, action: { drops, location in
                                 deepList.drop()
                                 return drop(drops, bottomOfGroupDeepPlace, location)
