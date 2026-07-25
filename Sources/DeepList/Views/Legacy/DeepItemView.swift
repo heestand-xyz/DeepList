@@ -27,9 +27,27 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
             
             ZStack {
                 
-                RoundedRectangle(cornerRadius: style.listCornerRadius)
-                    .foregroundColor(style.backgroundColor)
-                    .layoutPriority(-1)
+                Group {
+                    if style.backgroundGlass {
+#if !os(visionOS)
+                        if #available(iOS 26.0, macOS 26.0, *) {
+                            RoundedRectangle(cornerRadius: style.listCornerRadius)
+                                .foregroundColor(style.backgroundColor)
+                                .glassEffect(.regular, in: .rect(cornerRadius: style.listCornerRadius))
+                        } else {
+                            RoundedRectangle(cornerRadius: style.listCornerRadius)
+                                .foregroundColor(style.backgroundColor)
+                        }
+#else
+                        RoundedRectangle(cornerRadius: style.listCornerRadius)
+                            .foregroundColor(style.backgroundColor)
+#endif
+                    } else {
+                        RoundedRectangle(cornerRadius: style.listCornerRadius)
+                            .foregroundColor(style.backgroundColor)
+                    }
+                }
+                .layoutPriority(-1)
                 
                 VStack(alignment: .leading, spacing: 0.0) {
                     

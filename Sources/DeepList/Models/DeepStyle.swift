@@ -42,6 +42,7 @@ public struct DeepStyle {
     public var listCornerRadius: CGFloat
     public var separatorColor: Color
     public var backgroundColor: Color
+    public var backgroundGlass: Bool
     
     public init(
         rowHeight: CGFloat = {
@@ -59,7 +60,8 @@ public struct DeepStyle {
         listPadding: CGFloat = 0.0,
         listCornerRadius: CGFloat = 0.0,
         separatorColor: Color = .accentColor,
-        backgroundColor: Color = .clear
+        backgroundColor: Color = .clear,
+        backgroundGlass: Bool = false
     ) {
         self.rowHeight = rowHeight
         self.indentation = indentation
@@ -71,6 +73,7 @@ public struct DeepStyle {
         self.listCornerRadius = listCornerRadius
         self.separatorColor = separatorColor
         self.backgroundColor = backgroundColor
+        self.backgroundGlass = backgroundGlass
     }
     
     public static let `default` = DeepStyle()
