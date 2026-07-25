@@ -105,7 +105,6 @@ struct DeepItemView<DI: DeepItemProtocol & ObservableObject, DD: DeepDraggable, 
                                      content: content)
                     }
                 }
-                .clipShape(.rect(cornerRadius: style.listCornerRadius))
             }
             .padding(.horizontal, style.indentationPadding)
             

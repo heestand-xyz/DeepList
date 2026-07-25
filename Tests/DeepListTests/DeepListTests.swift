@@ -77,6 +77,8 @@ final class DeepListTests: XCTestCase {
         XCTAssertTrue(all.elementD.isNew(place: .below(itemID: all.groupA.id, after: false), in: all.root.items) == true)
         XCTAssertFalse(all.elementD.isNew(place: .above(itemID: all.elementD.id), in: all.root.items) == true)
         XCTAssertFalse(all.elementD.isNew(place: .below(itemID: all.elementD.id, after: false), in: all.root.items) == true)
+        XCTAssertFalse(all.elementBX1.isNew(place: .below(itemID: all.groupBX.id, after: false), in: all.root.items) == true)
+        XCTAssertTrue(all.elementBX2.isNew(place: .below(itemID: all.groupBX.id, after: false), in: all.root.items) == true)
         
         XCTAssertFalse(all.elementD.isNew(place: .bottom, in: all.root.items) == true)
         XCTAssertTrue(all.elementA3.isNew(place: .bottom, in: all.root.items) == true)

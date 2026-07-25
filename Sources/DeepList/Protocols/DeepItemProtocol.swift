@@ -80,6 +80,12 @@ extension DeepItemProtocol {
               let placeItem: Self = items.firstDeep(id: placeItemID, expandedOnly: true) else {
             return nil
         }
+
+        if case .below(_, let after) = place,
+           !after,
+           placeItem.items.first == self {
+            return false
+        }
         
         guard let depth: Int = items.depth(for: self),
               var placeDepth: Int = items.depth(for: placeItem) else {
